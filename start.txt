@@ -1,0 +1,57 @@
+==================================================
+  SMARTDOORLIGHT - HOW TO START THE PROJECT
+==================================================
+
+Follow these 4 simple steps to run the project:
+
+--------------------------------------------------
+STEP 1: PHONE HOTSPOT
+--------------------------------------------------
+1. Turn on your mobile hotspot on your phone.
+2. In Hotspot Settings, make sure AP Band is set to "2.4 GHz" (NOT 5 GHz).
+   (Your ESP32 only connects to 2.4 GHz).
+
+--------------------------------------------------
+STEP 2: PLUG IN THE ESP32
+--------------------------------------------------
+1. Plug the ESP32 into your laptop with the USB-C cable.
+2. The code is already flashed to the board.
+   As soon as it gets power, it will connect to your hotspot automatically.
+
+--------------------------------------------------
+STEP 3: START THE SERVERS (Run these 3 commands)
+--------------------------------------------------
+Open a terminal in your project folder (f:\smartdoor) and run:
+
+1. Start MQTT & Database:
+   cd f:\smartdoor\infrastructure
+   docker compose up -d
+
+2. Start the Backend API:
+   cd f:\smartdoor\backend
+   ./mvnw.cmd spring-boot:run
+
+3. Start the Frontend Dashboard:
+   cd f:\smartdoor\frontend
+   npm run dev
+
+--------------------------------------------------
+STEP 4: OPEN THE DASHBOARD
+--------------------------------------------------
+1. Open your web browser and go to:
+   http://localhost:5173
+
+2. The top bar will show "CONNECTED" in green.
+
+--------------------------------------------------
+HOW TO TEST:
+--------------------------------------------------
+- Click "Open Door"  --> The physical LED turns ON (if room is dark).
+- Click "Close Door" --> A 15-second countdown starts; then the LED turns OFF.
+- Shine a flashlight on the sensor --> The LED turns OFF (it knows it's bright).
+
+==================================================
+WIRING REMINDER:
+- LDR Sensor: VCC -> 3.3V, GND -> GND, AO -> GPIO 34
+- White LED:  GPIO 26 -> 220 Ohm resistor -> LED (+) -> LED (-) -> GND
+==================================================
