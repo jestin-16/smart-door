@@ -1,0 +1,9 @@
+# Optional TLS Listener Configuration for Port 8883
+# Rename this file to tls.conf once certificates are generated in /mosquitto/certs/
+
+listener 8883 0.0.0.0
+cafile /mosquitto/certs/ca.crt
+certfile /mosquitto/certs/server.crt
+keyfile /mosquitto/certs/server.key
+tls_version tlsv1.2
+require_certificate false

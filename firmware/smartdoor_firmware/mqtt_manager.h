@@ -5,6 +5,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <functional>
@@ -28,7 +29,8 @@ public:
     using ConfigCallback = std::function<void(const DeviceConfiguration& config)>;
 
     explicit MqttManager(const char* deviceId, const char* brokerHost, uint16_t brokerPort,
-                         const char* user = nullptr, const char* password = nullptr);
+                         const char* user = nullptr, const char* password = nullptr,
+                         bool useTls = false, const char* caCert = nullptr);
 
     void begin(const char* wifiSsid, const char* wifiPass);
     void update(); // Non-blocking loop call
@@ -48,10 +50,13 @@ private:
     uint16_t _brokerPort;
     String _mqttUser;
     String _mqttPass;
+    bool _useTls;
+    const char* _caCert;
     String _wifiSsid;
     String _wifiPass;
 
     WiFiClient _wifiClient;
+    WiFiClientSecure _secureClient;
     PubSubClient _mqttClient;
 
     unsigned long _lastWifiAttempt;

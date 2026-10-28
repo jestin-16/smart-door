@@ -3,7 +3,22 @@
 # Credentials & secrets
 secrets.h
 *.env
-.env.local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.csr
+*.crt
+*.srl
+!*.gitkeep
+
+# Mosquitto certificates and dynamic configs
+infrastructure/mosquitto/certs/*
+!infrastructure/mosquitto/certs/.gitkeep
+infrastructure/mosquitto/config/conf.d/*.conf
+!infrastructure/mosquitto/config/conf.d/tls.conf.example
+!infrastructure/mosquitto/config/conf.d/.gitkeep
 
 # Firmware build artifacts
 .pio/

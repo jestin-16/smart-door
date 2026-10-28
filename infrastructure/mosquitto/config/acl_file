@@ -1,0 +1,18 @@
+# Mosquitto Access Control List (ACL) for SmartDoorLight IoT System
+# Enforces least-privilege topic access for backend and edge devices.
+
+# Backend Spring Boot Service:
+# Allowed full read and write access to all device topics and broker status ($SYS)
+user smartdoor_backend
+topic readwrite smartdoor/device/#
+topic read $SYS/#
+
+# ESP32 Edge Device:
+# Allowed write access to telemetry, events, and status (LWT)
+# Allowed read (subscribe) access only to incoming commands and configuration
+user smartdoor_esp32
+topic write smartdoor/device/+/telemetry
+topic write smartdoor/device/+/event
+topic write smartdoor/device/+/status
+topic read smartdoor/device/+/command
+topic read smartdoor/device/+/config

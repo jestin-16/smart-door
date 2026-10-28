@@ -37,6 +37,12 @@ public class MqttGatewayService implements MqttCallbackExtended {
     @Value("${mqtt.default-device-id:smartdoor-01}")
     private String defaultDeviceId;
 
+    @Value("${mqtt.username:}")
+    private String mqttUsername;
+
+    @Value("${mqtt.password:}")
+    private String mqttPassword;
+
     private final DoorEventRepository eventRepository;
     private final ObjectMapper objectMapper;
     private final Map<String, TelemetryDto> latestTelemetryMap = new ConcurrentHashMap<>();
@@ -69,6 +75,10 @@ public class MqttGatewayService implements MqttCallbackExtended {
         }
     }
 
+    public boolean isConnected() {
+        return mqttClient != null && mqttClient.isConnected();
+    }
+
     private void connectToBroker() {
         try {
             mqttClient = new MqttAsyncClient(brokerUrl, clientId + "-" + UUID.randomUUID().toString().substring(0, 8), new MemoryPersistence());
@@ -79,6 +89,13 @@ public class MqttGatewayService implements MqttCallbackExtended {
             options.setCleanSession(true);
             options.setConnectionTimeout(5);
             options.setKeepAliveInterval(30);
+
+            if (mqttUsername != null && !mqttUsername.isBlank()) {
+                options.setUserName(mqttUsername);
+            }
+            if (mqttPassword != null && !mqttPassword.isBlank()) {
+                options.setPassword(mqttPassword.toCharArray());
+            }
 
             log.info("Connecting to MQTT Broker at {}...", brokerUrl);
             mqttClient.connect(options, null, new IMqttActionListener() {

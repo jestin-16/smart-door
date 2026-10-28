@@ -6,11 +6,19 @@
 #include "lighting_controller.h"
 #include "mqtt_manager.h"
 
+#ifndef MQTT_USE_TLS
+#define MQTT_USE_TLS false
+#endif
+
+#ifndef MQTT_CA_CERT
+#define MQTT_CA_CERT nullptr
+#endif
+
 // Instantiate physical hardware modules
 DoorSensor doorButton(PIN_DOOR_BUTTON, BUTTON_DEBOUNCE_MS);
 LightSensor lightSensor(PIN_LDR_ANALOG, DEFAULT_LIGHT_THRESHOLD, DEFAULT_LIGHT_HYSTERESIS, LDR_SAMPLE_COUNT);
 LightingController lighting(PIN_LIGHT_LED, PIN_STATUS_LED, DEFAULT_OFF_DELAY_MS);
-MqttManager mqtt(DEFAULT_DEVICE_ID, MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_USER, MQTT_PASSWORD);
+MqttManager mqtt(DEFAULT_DEVICE_ID, MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_USE_TLS, MQTT_CA_CERT);
 
 unsigned long lastTelemetryTime = 0;
 

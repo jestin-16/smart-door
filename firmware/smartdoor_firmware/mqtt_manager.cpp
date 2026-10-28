@@ -2,12 +2,15 @@
 #include "config.h"
 
 MqttManager::MqttManager(const char* deviceId, const char* brokerHost, uint16_t brokerPort,
-                         const char* user, const char* password)
+                         const char* user, const char* password,
+                         bool useTls, const char* caCert)
     : _deviceId(deviceId),
       _brokerHost(brokerHost),
       _brokerPort(brokerPort),
       _mqttUser(user ? user : ""),
       _mqttPass(password ? password : ""),
+      _useTls(useTls),
+      _caCert(caCert),
       _wifiSsid(""),
       _wifiPass(""),
       _mqttClient(_wifiClient),
@@ -27,6 +30,21 @@ void MqttManager::begin(const char* wifiSsid, const char* wifiPass) {
     _wifiPass = wifiPass;
 
     WiFi.mode(WIFI_STA);
+
+    if (_useTls) {
+        if (_caCert && strlen(_caCert) > 0) {
+            _secureClient.setCACert(_caCert);
+            Serial.println("[MQTT TLS] Configured Root CA certificate for verification.");
+        } else {
+            // For self-signed certificates or direct IP endpoints, encrypt transport using TLS
+            _secureClient.setInsecure();
+            Serial.println("[MQTT TLS] Initialized TLS transport (encrypted, direct IP mode).");
+        }
+        _mqttClient.setClient(_secureClient);
+    } else {
+        _mqttClient.setClient(_wifiClient);
+    }
+
     _mqttClient.setServer(_brokerHost.c_str(), _brokerPort);
     _mqttClient.setBufferSize(1024);
 
@@ -63,7 +81,11 @@ void MqttManager::maintainMqtt() {
     unsigned long now = millis();
     if (now - _lastMqttAttempt >= MQTT_RECONNECT_INTERVAL_MS || _lastMqttAttempt == 0) {
         _lastMqttAttempt = now;
-        Serial.printf("[MQTT] Connecting to %s:%d as %s...\n", _brokerHost.c_str(), _brokerPort, _deviceId.c_str());
+        if (_useTls) {
+            Serial.printf("[MQTT TLS] Connecting to %s:%d (MQTTS) as %s...\n", _brokerHost.c_str(), _brokerPort, _deviceId.c_str());
+        } else {
+            Serial.printf("[MQTT] Connecting to %s:%d (plain TCP) as %s...\n", _brokerHost.c_str(), _brokerPort, _deviceId.c_str());
+        }
 
         // Configure LWT (Last Will and Testament)
         const char* willTopic = _topicStatus.c_str();
