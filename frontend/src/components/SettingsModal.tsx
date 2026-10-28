@@ -31,8 +31,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
-      <div className="glass-card rounded-3xl border border-white/80 shadow-luxury-lg max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+      <div className="glass-card rounded-3xl border border-white/80 shadow-luxury-lg max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto animate-reveal-up">
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-slate-200/60 flex items-center justify-between">
           <div>
@@ -41,9 +41,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close settings"
             className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X aria-hidden="true" className="w-5 h-5" />
           </button>
         </div>
 

@@ -29,32 +29,16 @@ export function App() {
   } = useSmartDoor();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [revealKey, setRevealKey] = useState(0);
   const isConnected = connectionState === 'CONNECTED';
 
   const handleRefresh = () => {
-    setRevealKey((prev) => prev + 1);
     refetch();
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F6F1] bg-grid-pattern relative overflow-x-hidden flex flex-col selection:bg-amber-200 selection:text-amber-950 font-sans">
-      {/* Decorative Ambient Background Atmospheric Glows (EnergyAI style) */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed -top-40 left-1/4 w-[36rem] h-[36rem] bg-amber-400/10 rounded-full blur-3xl animate-ambient-float -z-10"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed top-72 right-1/4 w-[32rem] h-[32rem] bg-emerald-500/10 rounded-full blur-3xl animate-ambient-float anim-delay-500 -z-10"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed -bottom-40 left-1/3 w-[30rem] h-[30rem] bg-indigo-500/10 rounded-full blur-3xl animate-ambient-float anim-delay-300 -z-10"
-      />
-
+    <div className="dashboard-shell min-h-screen relative overflow-x-hidden flex flex-col selection:bg-amber-200 selection:text-amber-950 font-sans">
       {/* 1. Floating Pill Header with Smooth Reveal Down */}
-      <div className="animate-reveal-down anim-delay-50 z-30 pt-3">
+      <div className="dashboard-header">
         <Header
           status={connectionState}
           onOpenSettings={() => setIsSettingsOpen(true)}
@@ -63,19 +47,8 @@ export function App() {
         />
       </div>
 
-      {/* 2. Device Status Strip with Staggered Reveal Down */}
-      <div className="animate-reveal-down anim-delay-100 z-20">
-        <DeviceStatusBanner
-          telemetry={telemetry}
-          connectionState={connectionState}
-          lastSuccessfulUpdate={lastSuccessfulUpdate}
-          statusMessage={statusMessage}
-        />
-      </div>
-
       {/* 3. Main Dashboard Body with Staggered Cascade Entrance */}
       <main
-        key={revealKey}
         className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8"
       >
         {/* Error Notification */}
@@ -89,10 +62,17 @@ export function App() {
           </div>
         )}
 
+        <section className="overview-heading animate-reveal-up">
+          <div><p className="eyebrow">HOME OVERVIEW</p><h1>Your entrance, at a glance.</h1><p>A little awareness. A more welcoming home.</p></div>
+          <span className="overview-location"><span className={isConnected ? 'status-dot online' : 'status-dot'} />{isConnected ? 'Live from your entryway' : 'Waiting for live data'}</span>
+        </section>
+
         {/* Hero Architectural Digital Twin */}
         <div className="animate-reveal-up anim-delay-150">
           <DoorwayHeroVisualizer
             doorOpen={telemetry?.doorOpen}
+            reedSwitchClosed={telemetry?.reedSwitchClosed}
+            magnetDetected={telemetry?.magnetDetected}
             lightOn={telemetry?.lightOn}
             isDark={telemetry?.isDark}
             lightPercentage={telemetry?.lightPercentage}
@@ -107,39 +87,24 @@ export function App() {
           />
         </div>
 
-        {/* Section Heading & Hardware Node Badge */}
-        <div id="hardware-cards" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200/60 animate-reveal-up anim-delay-150">
-          <div>
-            <h2 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              <span>Hardware Telemetry Overview</span>
-              <span className="text-[11px] font-bold font-mono px-2.5 py-0.5 rounded-full bg-slate-900 text-white shadow-xs">
-                Live Edge Node
-              </span>
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Real-time door status, ambient light photocell, and autonomous 15s delay actuator
-            </p>
+        <section id="hardware-cards" className="controls-workspace" aria-labelledby="controls-title">
+          <div className="controls-intro animate-reveal-up anim-delay-150">
+            <span className="eyebrow">MAKE YOURSELF AT HOME</span>
+            <h2 id="controls-title">Small details.<br /><span>A calmer home.</span></h2>
+            <p>A feel for your surroundings.<br />A little control over your comfort.</p>
+            <span className="controls-live"><i className={isConnected ? 'status-dot online' : 'status-dot'} />{isConnected ? 'In sync with your entryway' : 'Waiting for your entryway'}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-white/80 text-slate-700 shadow-luxury font-mono text-[11px]">
-              <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
-              {isConnected ? 'ESP32 Streaming' : 'Standby / Offline'}
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Sensor Cards 3-Column Grid with Staggered Cascading Entrance */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1: Door Sensor (Dashboard Control & Live Hardware State) */}
+          <div className="controls-flow">
           <div className="animate-reveal-up anim-delay-200">
             <DoorStatusCard
               isOpen={telemetry?.doorOpen}
+              reedSwitchClosed={telemetry?.reedSwitchClosed}
+              magnetDetected={telemetry?.magnetDetected}
               isConnected={isConnected}
               onSetDoorState={setDoorState}
             />
           </div>
 
-          {/* Card 2: Ambient Light Photocell (LDR with Hysteresis) */}
           <div className="animate-reveal-up anim-delay-350">
             <AmbientLightCard
               lightPercentage={telemetry?.lightPercentage}
@@ -152,7 +117,6 @@ export function App() {
             />
           </div>
 
-          {/* Card 3: Doorway Light Control with 15s Delay */}
           <div className="animate-reveal-up anim-delay-500">
             <LightingControlCard
               lightOn={telemetry?.lightOn}
@@ -165,12 +129,26 @@ export function App() {
               onToggleLight={toggleLight}
             />
           </div>
-        </div>
+          </div>
+        </section>
+
 
         {/* 5. Event History & Audit Table */}
         <div className="animate-reveal-up anim-delay-650">
           <EventHistoryTable events={events} />
         </div>
+
+        <details className="device-details"><summary>Device information</summary>      {/* Connection details */}
+      <div className="connection-strip animate-fade-in">
+        <DeviceStatusBanner
+          telemetry={telemetry}
+          connectionState={connectionState}
+          lastSuccessfulUpdate={lastSuccessfulUpdate}
+          statusMessage={statusMessage}
+        />
+      </div>
+
+</details>
       </main>
 
       {/* 6. Settings Modal */}
@@ -188,10 +166,10 @@ export function App() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
             <span className="font-bold text-slate-800">SmartDoorLight</span>
-            <span>&bull; Real Hardware Edge Monitoring &bull; ESP32 &bull; Spring Boot &bull; PostgreSQL</span>
+            <span>&bull; A more thoughtful entrance.</span>
           </div>
           <span className="font-mono text-slate-400 text-[11px]">
-            Dashboard Control (Door) &bull; GPIO 34 (LDR ADC) &bull; GPIO 26 (LED Actuator)
+            Designed around your everyday.
           </span>
         </div>
       </footer>

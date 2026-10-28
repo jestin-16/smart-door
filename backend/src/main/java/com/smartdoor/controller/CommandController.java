@@ -26,23 +26,14 @@ public class CommandController {
     }
 
     @PostMapping("/door")
-    @Operation(summary = "Set logical door state", description = "Commands the logical door state OPEN or CLOSED via MQTT.")
+    @Operation(summary = "Set logical door state (Disabled)", description = "Door state is governed exclusively by the physical magnetic reed switch on GPIO 27. Remote command overrides are rejected.")
     public ResponseEntity<Map<String, Object>> setDoorState(
             @RequestParam(required = false) String deviceId,
             @Valid @RequestBody CommandRequest request) {
 
-        if (request.getState() == null || (!request.getState().equalsIgnoreCase("OPEN") && !request.getState().equalsIgnoreCase("CLOSED"))) {
-            return ResponseEntity.badRequest().body(Map.of("error", "State must be provided (OPEN or CLOSED)"));
-        }
-
-        String targetId = (deviceId != null && !deviceId.isBlank()) ? deviceId : defaultDeviceId;
-        mqttGatewayService.publishDoorCommand(targetId, request.getState().toUpperCase());
-
-        return ResponseEntity.ok(Map.of(
-                "status", "SUCCESS",
-                "deviceId", targetId,
-                "command", "SET_DOOR",
-                "state", request.getState().toUpperCase()
+        return ResponseEntity.badRequest().body(Map.of(
+                "status", "REJECTED",
+                "error", "Door state simulation is disabled. Physical magnetic reed switch on GPIO 27 is the active hardware sensor."
         ));
     }
 

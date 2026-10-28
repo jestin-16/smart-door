@@ -7,6 +7,8 @@ interface EventHistoryTableProps {
 }
 
 export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) => {
+  const pageSize = 5;
+  const [visibleCount, setVisibleCount] = useState(pageSize);
   const [filterType, setFilterType] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -44,34 +46,34 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/10 text-indigo-800 border border-indigo-300">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-            TIMER 15s START
+            TIMER STARTED
           </span>
         );
       case 'LIGHT_TIMER_CANCELLED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-800 border border-blue-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             TIMER CANCELLED
           </span>
         );
       case 'LIGHT_TIMER_EXPIRED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-800 border border-purple-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             TIMER EXPIRED
           </span>
         );
       case 'MODE_CHANGED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/10 text-sky-800 border border-sky-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             MODE CHANGED
           </span>
         );
       case 'CONFIG_UPDATED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-500/10 text-teal-800 border border-teal-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             CONFIG UPDATED
           </span>
         );
@@ -103,6 +105,8 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
     return true;
   });
 
+  const visibleEvents = filteredEvents.slice(0, visibleCount);
+
   const formatTimestamp = (isoString?: string) => {
     if (!isoString) return '--';
     try {
@@ -130,8 +134,8 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
             <History className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-slate-900">Hardware Telemetry &amp; Event Log</h3>
-            <p className="text-xs text-slate-500">Genuine physical sensor transitions and actuator events</p>
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">Recent activity</h3>
+            <p className="text-xs text-slate-500">The latest updates from your entryway.</p>
           </div>
         </div>
 
@@ -142,7 +146,8 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
             {['ALL', 'DOOR', 'LIGHT', 'CONFIG'].map((cat) => (
               <button
                 key={cat}
-                onClick={() => setFilterType(cat)}
+                onClick={() => { setFilterType(cat); setVisibleCount(pageSize); }}
+                aria-pressed={filterType === cat}
                 className={`px-3 py-1 rounded-full font-bold transition-all ${
                   filterType === cat
                     ? 'bg-white text-slate-900 shadow-xs'
@@ -159,9 +164,9 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Filter events..."
+              placeholder="Filter events..." aria-label="Filter events"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(pageSize); }}
               className="pl-8 pr-3 py-1.5 text-xs border border-slate-200/80 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-36 sm:w-48 bg-white/70 shadow-2xs"
             />
           </div>
@@ -170,7 +175,7 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
 
       {/* Table Content */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
+        <table className="w-full min-w-[640px] text-left text-xs">
           <thead className="bg-slate-100/50 border-b border-slate-200/60 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
             <tr>
               <th className="py-3 px-5 w-28">Timestamp</th>
@@ -181,7 +186,7 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
           </thead>
           <tbody className="divide-y divide-slate-100/80 text-slate-700">
             {filteredEvents.length > 0 ? (
-              filteredEvents.map((evt) => (
+              visibleEvents.map((evt) => (
                 <tr key={evt.id} className="hover:bg-white/80 transition-colors">
                   <td className="py-3 px-5 font-mono text-slate-500 whitespace-nowrap text-[11px] font-semibold">
                     {formatTimestamp(evt.createdAt)}
@@ -220,11 +225,11 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
                     <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
                       <Inbox className="w-6 h-6 stroke-1 text-slate-400" />
                     </div>
-                    <p className="text-sm font-bold text-slate-700">No hardware events recorded yet</p>
+                    <p className="text-sm font-bold text-slate-700">No activity to show</p>
                     <p className="text-xs text-slate-400 max-w-sm">
                       {searchQuery
                         ? 'No events match your search query.'
-                        : 'Press the physical push button on GPIO 4 or alter ambient light on the LDR to generate events.'}
+                        : 'Open or close the physical door, or change the ambient light to see events here.'}
                     </p>
                   </div>
                 </td>
@@ -235,12 +240,16 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
       </div>
 
       {/* Footer bar */}
-      <div className="p-3 px-6 bg-slate-50/60 border-t border-slate-200/50 flex items-center justify-between text-[11px] text-slate-500">
+      <div className="p-3 px-6 bg-slate-50/60 border-t border-slate-200/50 flex flex-wrap gap-2 items-center justify-between text-[11px] text-slate-500">
         <span className="flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          Audit trail stored in PostgreSQL 16 database
+          Entryway activity history
         </span>
-        <span className="font-mono">{filteredEvents.length} events logged</span>
+        <div className="activity-pagination">
+          <span aria-live="polite">Showing {visibleEvents.length} of {filteredEvents.length} events</span>
+          {visibleCount > pageSize && <button className="activity-less" onClick={() => setVisibleCount(pageSize)}>Show less</button>}
+          {visibleCount < filteredEvents.length && <button className="activity-more" onClick={() => setVisibleCount(count => count + pageSize)}>Show more <span aria-hidden="true">+</span></button>}
+        </div>
       </div>
     </div>
   );

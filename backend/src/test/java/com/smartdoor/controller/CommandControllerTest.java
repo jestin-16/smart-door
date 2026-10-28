@@ -64,4 +64,16 @@ class CommandControllerTest {
         assertEquals("MANUAL", response.getBody().get("mode"));
         verify(mqttGatewayService, times(1)).publishModeCommand("smartdoor-01", "MANUAL");
     }
+
+    @Test
+    void testSetDoorState_RejectedInFavorOfReedSwitch() {
+        CommandRequest request = new CommandRequest("OPEN", null);
+
+        ResponseEntity<Map<String, Object>> response = commandController.setDoorState("smartdoor-01", request);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals("REJECTED", response.getBody().get("status"));
+        verifyNoInteractions(mqttGatewayService);
+    }
 }

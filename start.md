@@ -8,10 +8,9 @@ Complete step-by-step instructions to run, flash, and test the **SmartDoorLight*
 
 | Component | ESP32 Pin | Mode / Connection | Electrical Notes |
 | :--- | :--- | :--- | :--- |
+| **Magnetic Reed Switch** | **GPIO 27** | Terminal 1 $\rightarrow$ **GPIO 27**<br>Terminal 2 $\rightarrow$ **GND** | **Hardware Input**: Uses internal `INPUT_PULLUP`. No external pull-up resistor required. Magnet near (closed) = LOW; Magnet away (open) = HIGH. |
 | **LDR Sensor (ET5329)** | **GPIO 34** (`ADC1_CH6`) | VCC $\rightarrow$ **3.3V**<br>GND $\rightarrow$ **GND**<br>AO $\rightarrow$ **GPIO 34** | **Safety Critical**: Connect VCC to **3.3V only** (never 5V). 12-bit ADC (0–4095). High ADC ($\approx 3200$) = Dark; Low ADC ($\approx 800$) = Bright. |
 | **White Doorway LED** | **GPIO 26** | GPIO 26 $\rightarrow$ **220 Ω resistor** $\rightarrow$ LED Anode (+)<br>LED Cathode (-) $\rightarrow$ **GND** | Safe current limit: $\approx 5.5\text{ mA} < 12\text{ mA}$ GPIO max limit. |
-| **Magnetic Reed Switch (ET5370)** *(Optional)* | **GPIO 27** | Wire 1 $\rightarrow$ **GPIO 27**<br>Wire 2 $\rightarrow$ **GND** | Uses internal `INPUT_PULLUP`. Magnet near (door closed) = LOW; Magnet away (door open) = HIGH. |
-| **Logical Door Control** | **Dashboard** | Web UI Buttons | Primary demo trigger: Click **Open Door** / **Close Door** on the web dashboard. |
 | **Power Supply** | **USB-C Port** | 5V USB (Laptop, Power Bank, or Charger) | ESP32 boots in $<1$ second and auto-connects to Wi-Fi. |
 
 ### Breadboard Wiring Schematic
@@ -98,10 +97,10 @@ npm run dev
 | Test Step | Action | Expected Behavior |
 | :--- | :--- | :--- |
 | **1. Connection** | Open `http://localhost:5173` with ESP32 powered on | Banner displays **CONNECTED** with green indicator, genuine LDR ADC reading ($\approx 3100-3250$), and Wi-Fi RSSI. |
-| **2. Open Door in Dark** | Leave LDR in normal room lighting ($> 2000$ ADC), click **Open Door** | Dashboard shows **Door Open** badge; physical white LED on **GPIO 26 turns ON immediately**. |
+| **2. Open Door in Dark** | Move magnet away from reed switch on GPIO 27 while room is dark ($> 2000$ ADC) | Dashboard updates to **Door Open** and **SWITCH OPEN (GPIO HIGH)**; physical white LED on **GPIO 26 turns ON immediately**. |
 | **3. Daylight Suppression** | With door open, shine a phone light onto the LDR (ADC drops below $1900$) | Dashboard updates to **BRIGHT**; physical LED on **GPIO 26 turns OFF**. Remove light $\rightarrow$ LED turns back ON. |
-| **4. Close Door 15s Timer** | With LED ON, click **Close Door** on the dashboard | Dashboard displays **Door Closed** and an animated **15.0s countdown bar**. Physical LED remains ON for 15 seconds, then **turns OFF**. |
-| **5. Cancel Delay on Reopening** | Close door, and during the 15-second countdown, click **Open Door** | The countdown timer cancels immediately; the physical LED remains ON without interruption. |
+| **4. Close Door 15s Timer** | With LED ON, move the magnet proximate to the reed switch | Dashboard displays **Door Closed**, **SWITCH CLOSED (GPIO LOW)**, and an animated **15.0s countdown bar**. Physical LED remains ON for 15 seconds, then **turns OFF**. |
+| **5. Cancel Delay on Reopening** | Close door, and during the 15-second countdown, move magnet away again | The countdown timer cancels immediately; the physical LED remains ON without interruption. |
 
 ---
 
@@ -109,10 +108,11 @@ npm run dev
 
 ```
 [ Physical ESP32 DevKit ] 
+   ├── Magnetic Reed Switch (GPIO 27 INPUT_PULLUP)
    ├── LDR Photocell (GPIO 34 ADC1)
    └── White LED Actuator (GPIO 26 Output)
          │
-         │  Wi-Fi 2.4 GHz (JSON Telemetry & Commands)
+         │  Wi-Fi 2.4 GHz (JSON Telemetry & Events)
          ▼
 [ Eclipse Mosquitto MQTT Broker ]  (tcp://10.41.210.66:1883)
          │
@@ -120,13 +120,13 @@ npm run dev
          ▼
 [ Spring Boot 4 Java 21 Backend ] (http://localhost:8080)
    ├── PostgreSQL 16 Persistence (Event Audit Log)
-   └── REST API Endpoints (/commands/door, /commands/light, /telemetry)
+   └── REST API Endpoints (/commands/light, /commands/mode, /telemetry)
          │
          │  HTTP / Polling (Every 3 seconds)
          ▼
 [ React 19 + TypeScript Dashboard ] (http://localhost:5173)
    ├── Live Connection Status Banner (Zero Mock Data)
-   ├── Door Control Card (Open Door / Close Door buttons)
+   ├── Door Status Card (Real Reed Contact & Magnet Proximity)
    ├── Ambient Illuminance Card (Real ADC readings & Hysteresis slider)
    └── Doorway Light Control Card (15-second delay countdown bar)
 ```

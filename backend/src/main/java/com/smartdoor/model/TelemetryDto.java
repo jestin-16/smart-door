@@ -6,6 +6,9 @@ public class TelemetryDto {
     private String deviceId;
     private Long uptimeSeconds;
     private Boolean doorOpen;
+    private Boolean reedSwitchClosed;
+    private Boolean magnetDetected;
+    private Boolean doorStateEstablished;
     private Integer lightAdc;
     private Double lightPercentage;
     private Integer lightThreshold;
@@ -37,6 +40,15 @@ public class TelemetryDto {
 
     public Boolean getDoorOpen() { return doorOpen; }
     public void setDoorOpen(Boolean doorOpen) { this.doorOpen = doorOpen; }
+
+    public Boolean getReedSwitchClosed() { return reedSwitchClosed; }
+    public void setReedSwitchClosed(Boolean reedSwitchClosed) { this.reedSwitchClosed = reedSwitchClosed; }
+
+    public Boolean getMagnetDetected() { return magnetDetected; }
+    public void setMagnetDetected(Boolean magnetDetected) { this.magnetDetected = magnetDetected; }
+
+    public Boolean getDoorStateEstablished() { return doorStateEstablished; }
+    public void setDoorStateEstablished(Boolean doorStateEstablished) { this.doorStateEstablished = doorStateEstablished; }
 
     public Integer getLightAdc() { return lightAdc; }
     public void setLightAdc(Integer lightAdc) { this.lightAdc = lightAdc; }

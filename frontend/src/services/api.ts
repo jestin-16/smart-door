@@ -4,6 +4,13 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
 export class ApiService {
   /**
+   * Returns the SSE stream URL for live real-time hardware telemetry events.
+   */
+  public getTelemetryStreamUrl(): string {
+    return `${BASE_URL}/telemetry/stream`;
+  }
+
+  /**
    * Fetches genuine hardware telemetry from the backend service.
    * Never fabricates fallback or default fake sensor readings.
    */

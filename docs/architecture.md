@@ -5,11 +5,11 @@
 ```mermaid
 graph TD
     subgraph EdgeDevice["ESP32 Microcontroller (Edge Hardware)"]
-        Button["Push Button (GPIO 4)"] --> Debounce["50ms Debounce & Toggle"]
+        Reed["Magnetic Reed Switch (GPIO 27, INPUT_PULLUP)"] --> Debounce["50ms Debounce & FSM"]
         LDR["LDR Module (GPIO 34 ADC1)"] --> Hysteresis["Moving Average + Hysteresis"]
         Debounce --> EdgeState["Autonomous Lighting Controller"]
         Hysteresis --> EdgeState
-        EdgeState --> LED["LED Light (GPIO 18)"]
+        EdgeState --> LED["Doorway LED (GPIO 26 via 220 Ohm)"]
         EdgeState --> MQTTClient["PubSubClient MQTT Manager"]
     end
 

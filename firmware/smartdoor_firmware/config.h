@@ -8,9 +8,11 @@
 // ==========================================
 // GPIO Pin Assignments
 // ==========================================
-// Physical Push Button: Optional breadboard fallback (GPIO 27)
-#define PIN_DOOR_BUTTON 27
-#define PIN_DOOR_SENSOR PIN_DOOR_BUTTON // Backward compatibility alias
+// Magnetic Reed Switch: Verified physical sensor (GPIO 27)
+// Connected between GPIO 27 and GND (Internal pull-up enabled, active LOW)
+#define PIN_REED_SWITCH 27
+#define PIN_DOOR_SENSOR PIN_REED_SWITCH
+#define PIN_DOOR_BUTTON PIN_REED_SWITCH // Deprecated alias
 
 // LDR Light Sensor: Connected to GPIO 34 (ADC1_CH6, Wi-Fi safe, input-only)
 #define PIN_LDR_ANALOG 34
@@ -22,11 +24,21 @@
 #define PIN_STATUS_LED 2
 
 // ==========================================
-// Timing & Operational Defaults
+// Reed Switch & Door State Configuration
 // ==========================================
-// Software debounce window for push button (ms)
-#define BUTTON_DEBOUNCE_MS 50
-#define SENSOR_DEBOUNCE_MS BUTTON_DEBOUNCE_MS
+// Software debounce window for reed switch (ms) — 20ms provides instant response with full contact noise rejection
+#define REED_DEBOUNCE_MS 20
+#define SENSOR_DEBOUNCE_MS REED_DEBOUNCE_MS
+#define BUTTON_DEBOUNCE_MS REED_DEBOUNCE_MS // Deprecated alias
+
+// Physical Mounting Mapping:
+// Standard door frame installation:
+// - Switch mounted on door frame, magnet mounted on moving door edge.
+// - Door CLOSED: Magnet proximate -> Switch contacts CLOSED (GPIO reads LOW).
+// - Door OPEN: Magnet absent -> Switch contacts OPEN (GPIO reads HIGH via INPUT_PULLUP).
+// Set to true for standard mounting (Magnet Detected = Door Closed).
+// Set to false for reverse/inverted mounting (Magnet Detected = Door Open).
+#define DOOR_DEFAULT_MAGNET_DETECTS_CLOSED true
 
 // Non-blocking timer duration after door closes before light switches off (ms)
 #define DEFAULT_OFF_DELAY_MS 15000UL // 15 seconds
@@ -39,7 +51,7 @@
 #define DEFAULT_LIGHT_HYSTERESIS 100   // Hysteresis window (prevents rapid switching)
 
 // Telemetry periodic broadcast interval (ms)
-#define TELEMETRY_INTERVAL_MS 5000UL
+#define TELEMETRY_INTERVAL_MS 1500UL
 
 // Reconnection intervals for non-blocking network state machine (ms)
 #define WIFI_RECONNECT_INTERVAL_MS 5000UL

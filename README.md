@@ -1,119 +1,139 @@
 # SmartDoorLight — Real ESP32 IoT Monitoring & Automatic Lighting System
 
-A complete, production-grade, modular IoT smart door monitoring and automated doorway lighting application engineered around an ESP32 development board, physical breadboard inputs, Spring Boot (Java 21) backend, PostgreSQL persistence, MQTT messaging, and React (Vite + TypeScript + Tailwind CSS) dashboard.
+A complete, production-grade, modular IoT smart door monitoring and automated doorway lighting application engineered around an ESP32 development board, physical magnetic reed switch hardware sensor, LDR analog light sensor, Spring Boot (Java 21) backend, PostgreSQL persistence, MQTT messaging, and React (Vite + TypeScript + Tailwind CSS) dashboard.
 
 ---
 
-## Hardware Specifications & Real Circuit Setup
+## 1. Verified Physical Hardware Setup
 
-| Component | ESP32 GPIO | Mode / Circuit | Notes |
-| :--- | :--- | :--- | :--- |
-| **Logical Door Control** | **Dashboard** | MQTT Command | Controlled via Dashboard **Open Door** & **Close Door** buttons. Sends real MQTT commands directly to ESP32. |
-| **LDR Light Sensor Module (ET5329)** | **GPIO 34** | Analog Input (`ADC1_CH6`) | **Safety Critical**: Connected to 3.3V pin (NOT 5V). Real calibration: Bright $\approx 784-845$, Dark $\approx 3206-3228$. Base threshold $T = 2000$ with $\pm 100$ hysteresis. |
-| **Primary White LED** | **GPIO 26** | Digital Output | Connected via a **$220\Omega$ resistor** to LED anode (safe current $\approx 5.5\text{mA} < 12\text{mA}$ limit). |
-| **Status Indicator** | **GPIO 2** | Digital Output | Internal onboard blue LED indicator. |
+The physical magnetic reed switch has been connected directly to the ESP32 and verified via Arduino Serial Monitor.
+
+### Physical Wiring & Pin Assignments
+
+| Component | ESP32 GPIO | Mode / Circuit | Wiring Detail | Electrical Note |
+| :--- | :--- | :--- | :--- | :--- |
+| **Magnetic Reed Switch** | **GPIO 27** | `INPUT_PULLUP` | Terminal 1 $\rightarrow$ GPIO 27<br>Terminal 2 $\rightarrow$ Shared GND | Internal $\approx 45\text{k}\Omega$ pull-up utilized. **No external pull-up resistor required.** |
+| **LDR Module (ET5329)** | **GPIO 34** | Analog Input (`ADC1_CH6`) | VCC $\rightarrow$ 3.3V<br>GND $\rightarrow$ GND<br>AO $\rightarrow$ GPIO 34 | **Safety Critical**: Connected to 3.3V pin (strictly $\le 3.3\text{V}$ for ESP32 ADC). High ADC ($\approx 3200$) = Dark; Low ADC ($\approx 800$) = Bright. |
+| **Doorway White LED** | **GPIO 26** | Digital Output | GPIO 26 $\rightarrow$ $220\Omega$ resistor $\rightarrow$ LED Anode (+)<br>LED Cathode (-) $\rightarrow$ GND | Current limiting: $R = \frac{3.3V - 2.1V}{0.0055A} \approx 218\Omega \rightarrow 220\Omega$ standard. Safe current $\approx 5.5\text{mA} < 12\text{mA}$ limit. |
+| **Status Indicator** | **GPIO 2** | Digital Output | Internal onboard blue LED | Driven directly by internal board traces. |
+
+### Circuit Diagram
+
+```
+                 +--------------------------------+
+                 |       ESP32 30-PIN DEVKIT      |
+                 |                                |
+                 |  3.3V  -------------+          |---------> VCC (LDR Module)
+                 |  GND   -------------|-+--------|---------> GND (LDR, LED Cathode, Reed Term 2)
+                 |                     | |        |
+                 |   GPIO 34 <---------+----------|---------> AO (LDR Module Analog Output)
+                 |                                |
+                 |   GPIO 26 ---------[220 Ohm]---|---------> [White LED Anode (+)]
+                 |                                |           [LED Cathode (-)] -> GND
+                 |                                |
+                 |   GPIO 27 <--------------------|---------> Reed Switch Terminal 1
+                 |   (INPUT_PULLUP)               |           Reed Switch Terminal 2 -> GND
+                 +--------------------------------+
+```
 
 ---
 
-## Operating Behavior & Lighting Logic
+## 2. Door-State Detection & Physical Reed Switch Behavior
 
-1. **Dashboard Logical Door Control**: User clicks **Open Door** or **Close Door** on the dashboard. The command is transmitted over MQTT to the ESP32.
-2. **Illuminance with Hysteresis**: The LDR continuously measures ambient light. With base threshold $T = 2000$ and hysteresis $H = 100$, ambient switches to `DARK` only if ADC rises above 2100, and switches to `BRIGHT` only if ADC drops below 1900.
-3. **Automatic Lighting Rule**:
-   - Door is **OPEN** AND Environment is **DARK** $\rightarrow$ Turn LED **ON** instantly.
-   - Environment is **BRIGHT** $\rightarrow$ Keep automatic light **OFF**.
-   - Door becomes **CLOSED** $\rightarrow$ Start non-blocking 15-second countdown timer before shutting the LED OFF.
-   - If the door is reopened during the 15-second delay, cancel shutdown countdown and re-evaluate light condition.
-4. **Local Edge Autonomy**: The lighting controller executes locally in firmware `loop()` using non-blocking `millis()`. If Wi-Fi, MQTT, or backend disconnects, local lighting operations continue uninterrupted.
+### Electrical Behavior (Normally-Open Reed Switch with `INPUT_PULLUP`)
+- **GPIO LOW (0V)**: Reed switch contacts are closed. The neodymium magnet is in close proximity activating the contacts.
+- **GPIO HIGH (3.3V)**: Reed switch contacts are open. The neodymium magnet is absent / out of range.
+
+### Physical Mounting & Configurable Mapping
+Reed contact state and door state are not automatically identical. The system implements a configurable mapping (`DOOR_DEFAULT_MAGNET_DETECTS_CLOSED`):
+
+1. **Standard Mounting (Default: `magnetDetectsClosed = true`)**:
+   - The reed switch is mounted to the stationary door frame (jamb).
+   - The neodymium magnet is mounted to the moving door edge.
+   - When the door is **CLOSED**, the magnet is adjacent to the switch $\rightarrow$ **Switch CLOSED (GPIO LOW)**.
+   - When the door is **OPEN**, the magnet swings away $\rightarrow$ **Switch OPEN (GPIO HIGH)**.
+2. **Reverse / Inverted Mounting (`magnetDetectsClosed = false`)**:
+   - For specialized installations or normally-closed (NC) switches where magnet proximity indicates an open doorway.
+
+### Real Hardware Verification Log
+Physical laboratory testing confirmed the following Serial Monitor output when moving a neodymium magnet near and away from the reed switch on GPIO 27:
+
+```text
+[REED SENSOR] MAGNET NOT DETECTED - SWITCH OPEN (GPIO HIGH)
+[DOOR EVENT] Physical Door transitioned to: OPEN
+[REED SENSOR] MAGNET DETECTED - SWITCH CLOSED (GPIO LOW)
+[DOOR EVENT] Physical Door transitioned to: CLOSED
+[REED SENSOR] MAGNET NOT DETECTED - SWITCH OPEN (GPIO HIGH)
+[DOOR EVENT] Physical Door transitioned to: OPEN
+```
+
+### Noise Filtering & Event Guarantee
+- **50ms Software Debouncing**: Mechanical reed vibration during contact closure is filtered by a non-blocking debounce timer.
+- **State Transition Events**: Events are emitted **only** when the debounced state changes.
+- **No Duplicate Events**: While the door remains open, no repeated open events are published.
+- **Known Initial State**: Baseline state is established on boot in `DoorSensor::begin()`.
 
 ---
 
-## Zero Mock Data Policy
+## 3. Autonomous Lighting Logic (Failsafe Edge Control)
 
-All simulated and fabricated software telemetry has been removed:
-- **Explicit States**: `CONNECTED`, `DISCONNECTED`, `UNKNOWN`.
-- **Unavailable Readings**: When the ESP32 is offline, sensor values are displayed as `--` rather than invented readings.
-- **Disconnected Notice**: When hardware is not communicating, the UI displays:
-  > *"Device disconnected — waiting for hardware connection."*
-- **Real Hardware Actuation**: LED on GPIO 26 actually changes state based on genuine sensor readings on GPIO 34 and dashboard commands.
+The lighting state machine executes continuously in firmware `loop()` using non-blocking `millis()`. It does not depend on cloud or broker connectivity to operate:
+
+1. **Door OPEN + Ambient DARK**: Turns White LED on GPIO 26 **ON** immediately.
+2. **Door OPEN + Ambient BRIGHT**: Keeps White LED **OFF**.
+3. **Door Closes**: Initiates the configured **15-second non-blocking shutdown delay**.
+4. **Door Reopens during countdown**: Cancels the pending shutdown delay immediately and retains the light if still dark.
+5. **Photocell Hysteresis**: With midpoint threshold $T = 2000$ and band $H = 100$:
+   - Transitions to DARK only above 2100 ADC.
+   - Transitions to BRIGHT only below 1900 ADC.
+   - Eliminates flicker at dawn/dusk boundaries.
 
 ---
 
-## Project Structure
+## 4. Production Web Dashboard & Backend Integration
+
+The push-button door simulation has been completely eliminated from production code. The web dashboard displays genuine hardware edge data:
+- **Door State**: `Door Open` / `Door Closed` / `--` (Standby when offline)
+- **Reed Contact State**: `SWITCH CLOSED (GPIO LOW)` / `SWITCH OPEN (GPIO HIGH)`
+- **Magnet Proximity**: `Magnet Detected (Proximate)` / `Magnet Not Detected (Absent)`
+- **LDR Photocell**: Real smoothed ADC counts and brightness percentage
+- **LED Actuator**: Real physical output state and active countdown timer
+- **Zero Mock Data**: When hardware is disconnected, all sensor metrics render as explicit `--` unavailable markers with a status notice.
+
+---
+
+## 5. Project Directory Structure
+
 ```
 f:\smartdoor\
-├── firmware\                 # ESP32 C++ PlatformIO project (DoorSensor, LightSensor, Controller)
+├── firmware\                 # ESP32 C++ PlatformIO & Arduino IDE firmware
+│   ├── include\              # Hardware configuration, pins, and class headers
+│   │   ├── config.h          # GPIO 27 (Reed), GPIO 34 (LDR), GPIO 26 (LED)
+│   │   ├── door_sensor.h     # Debounced reed switch driver
+│   │   ├── light_sensor.h    # LDR driver with ADC hysteresis
+│   │   └── lighting_controller.h # Non-blocking 15s delay state machine
+│   ├── src\                  # Firmware implementation files
+│   └── smartdoor_firmware\   # Arduino IDE mirrored sketch (.ino + sources)
 ├── frontend\                 # React 19, Vite, TypeScript, Tailwind CSS dashboard
-├── backend\                  # Java 21, Spring Boot 4, Maven REST & MQTT service
-├── infrastructure\           # Docker Compose (Mosquitto MQTT & PostgreSQL 16)
-└── docs\                     # Hardware wiring guide, MQTT protocol schemas, architecture
+│   ├── src\components\       # Live telemetry and architectural digital twin cards
+│   └── src\__tests__\        # Vitest hardware state machine test suite
+├── backend\                  # Spring Boot 4 (Java 21) REST & MQTT service
+│   ├── src\main\             # MqttGatewayService, Controllers, JPA Entities
+│   └── src\test\             # JUnit 5 integration test suite
+├── infrastructure\           # Mosquitto MQTT & PostgreSQL 16 Docker Compose
+└── docs\                     # Hardware guides, architecture, testing reports
 ```
 
 ---
 
-## Quickstart Guide
+## 6. Test Execution Summary
 
-### 1. Flash ESP32 Firmware
-```bash
-cd firmware
-# Copy secrets template and enter your Wi-Fi SSID, Password, and MQTT broker IP
-cp include/secrets.h.example include/secrets.h
+### Automated Test Results
+- **Backend Test Suite (Maven / JUnit 5)**: **10 passed, 0 failures, 0 errors** (100% green).
+- **Frontend Test Suite (Vitest / Testing Library)**: **14 passed, 0 failures** (100% green).
+- **Frontend Production Build**: `tsc -b && vite build` compiled successfully without warnings or errors.
 
-# Compile and upload via PlatformIO
-pio run --target upload
-pio device monitor -b 115200
-```
-
-### 2. Launch Local Infrastructure
-```bash
-cd infrastructure
-docker compose up -d
-```
-Starts Mosquitto MQTT broker (`1883`, `9001`) and PostgreSQL 16 (`5432`).
-
-### 3. Run Backend Service
-```bash
-cd backend
-./mvnw.cmd spring-boot:run
-```
-Spring Boot API available at `http://localhost:8080`. Swagger documentation at `http://localhost:8080/swagger-ui.html`.
-
-### 4. Run Frontend Dashboard
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Dashboard available at `http://localhost:5173`.
-
----
-
-## Automated Test Execution Results
-
-All automated unit and component test suites pass 100%:
-
-### Frontend Vitest Suite
-```
-✓ src/__tests__/SmartDoor.test.tsx (12 tests passed)
-  ✓ Button press changes door state once (toggles OPEN <-> CLOSED)
-  ✓ OPEN + DARK turns the LED ON automatically
-  ✓ OPEN + BRIGHT keeps the automatic light OFF
-  ✓ Closing the door triggers the defined 15-second shutdown delay
-  ✓ Reopening the door cancels the pending shutdown
-  ✓ LDR threshold hysteresis prevents rapid switching near boundary
-  ✓ Displays unavailable values as "--" when device is disconnected
-  ✓ Displays genuine door open state when connected
-  ✓ Displays "--" for illuminance when light sensor is disconnected
-  ✓ Displays actual illuminance and hysteresis when connected
-  ✓ Displays "--" for LED actuator when disconnected
-  ✓ Displays active 15s timer when confirmed by hardware telemetry
-```
-
-### Backend Maven JUnit 5 & Mockito Suite
-```
-[INFO] Running com.smartdoor.controller.CommandControllerTest (3 tests passed)
-[INFO] Running com.smartdoor.controller.ConfigControllerTest (2 tests passed)
-[INFO] Running com.smartdoor.repository.DoorEventRepositoryTest (1 test passed)
-[INFO] Running com.smartdoor.SmartdoorBackendApplicationTests (1 test passed)
-[INFO] BUILD SUCCESS (Tests run: 7, Failures: 0, Errors: 0)
-```
+### Hardware Testing Status
+- **Physical Reed Switch on GPIO 27**: **PASSED** (Verified with neodymium magnet on Serial Monitor).
+- **LDR Calibration & Dynamic Lux Range**: Pending final physical bench testing in varied room lux.
+- **End-to-End MQTT Cloud Loopback**: Pending physical connection with live broker.

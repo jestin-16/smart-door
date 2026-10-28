@@ -21,6 +21,8 @@ public class DoorEvent {
     private String eventType;
 
     private Boolean doorOpen;
+    private Boolean reedSwitchClosed;
+    private Boolean magnetDetected;
     private Boolean lightOn;
     private Double lightPercentage;
     private Integer lightAdc;
@@ -63,6 +65,12 @@ public class DoorEvent {
 
     public Boolean getDoorOpen() { return doorOpen; }
     public void setDoorOpen(Boolean doorOpen) { this.doorOpen = doorOpen; }
+
+    public Boolean getReedSwitchClosed() { return reedSwitchClosed; }
+    public void setReedSwitchClosed(Boolean reedSwitchClosed) { this.reedSwitchClosed = reedSwitchClosed; }
+
+    public Boolean getMagnetDetected() { return magnetDetected; }
+    public void setMagnetDetected(Boolean magnetDetected) { this.magnetDetected = magnetDetected; }
 
     public Boolean getLightOn() { return lightOn; }
     public void setLightOn(Boolean lightOn) { this.lightOn = lightOn; }

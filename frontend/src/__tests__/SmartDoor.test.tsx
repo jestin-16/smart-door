@@ -12,15 +12,25 @@ describe('Real Hardware Edge Logic & State Machine Specification', () => {
     sim = new TestEdgeStateMachine();
   });
 
-  it('1. Door command changes logical door state (OPEN <-> CLOSED)', () => {
+  it('1. Magnetic reed switch state determines door state with configurable mapping', () => {
     expect(sim.getTelemetry().doorOpen).toBe(false);
 
-    // Open door command from dashboard
-    sim.setDoor(true);
+    // Neodymium magnet moved away (switch opens, GPIO HIGH) -> Door OPEN (Standard mapping)
+    sim.setReedSwitch(false, true);
     expect(sim.getTelemetry().doorOpen).toBe(true);
+    expect(sim.getTelemetry().reedSwitchClosed).toBe(false);
+    expect(sim.getTelemetry().magnetDetected).toBe(false);
 
-    // Close door command from dashboard
-    sim.setDoor(false);
+    // Neodymium magnet moved proximate (switch closes, GPIO LOW) -> Door CLOSED (Standard mapping)
+    sim.setReedSwitch(true, true);
+    expect(sim.getTelemetry().doorOpen).toBe(false);
+    expect(sim.getTelemetry().reedSwitchClosed).toBe(true);
+    expect(sim.getTelemetry().magnetDetected).toBe(true);
+
+    // Inverted/Reverse mounting mapping:
+    sim.setReedSwitch(true, false);
+    expect(sim.getTelemetry().doorOpen).toBe(true);
+    sim.setReedSwitch(false, false);
     expect(sim.getTelemetry().doorOpen).toBe(false);
   });
 
@@ -104,22 +114,28 @@ describe('Real Hardware Edge Logic & State Machine Specification', () => {
 describe('Dashboard Hardware State & Disconnected State Presentation', () => {
   it('displays unavailable values as "--" when device is disconnected', () => {
     render(<DoorStatusCard isOpen={undefined} isConnected={false} />);
-    expect(screen.getByText('--')).toBeInTheDocument();
+    expect(screen.getAllByText('--').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('STANDBY')).toBeInTheDocument();
     expect(screen.getByText(/Awaiting hardware telemetry packet/i)).toBeInTheDocument();
   });
 
-  it('displays genuine door open state and action buttons when connected', () => {
-    const handleSetDoor = vi.fn();
-    render(<DoorStatusCard isOpen={true} isConnected={true} onSetDoorState={handleSetDoor} />);
+  it('displays genuine door open state and reed switch status when connected', () => {
+    render(<DoorStatusCard isOpen={true} reedSwitchClosed={false} magnetDetected={false} isConnected={true} />);
     expect(screen.getByText('Door Open')).toBeInTheDocument();
     expect(screen.getByText('OPEN')).toBeInTheDocument();
     expect(screen.getByText(/Door is OPEN/i)).toBeInTheDocument();
+    expect(screen.getByText(/SWITCH OPEN \(GPIO HIGH\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Magnet Not Detected \(Absent\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/GPIO 27 \(INPUT_PULLUP\)/i)).toBeInTheDocument();
+  });
 
-    const closeBtn = screen.getByRole('button', { name: /close door/i });
-    expect(closeBtn).toBeInTheDocument();
-    fireEvent.click(closeBtn);
-    expect(handleSetDoor).toHaveBeenCalledWith('CLOSED');
+  it('displays genuine door closed state and magnet detected when connected', () => {
+    render(<DoorStatusCard isOpen={false} reedSwitchClosed={true} magnetDetected={true} isConnected={true} />);
+    expect(screen.getByText('Door Closed')).toBeInTheDocument();
+    expect(screen.getByText('CLOSED')).toBeInTheDocument();
+    expect(screen.getByText(/Door is CLOSED/i)).toBeInTheDocument();
+    expect(screen.getByText(/SWITCH CLOSED \(GPIO LOW\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Magnet Detected \(Proximate\)/i)).toBeInTheDocument();
   });
 
   it('displays "--" for illuminance when light sensor is disconnected', () => {
@@ -184,14 +200,13 @@ describe('Dashboard Hardware State & Disconnected State Presentation', () => {
     expect(screen.getByText(/Door Closed Auto-Off Timer Active/i)).toBeInTheDocument();
   });
 
-  it('renders dashboard with staggered reveal animation classes', async () => {
+  it('renders the control workspace with navigation and staggered content', async () => {
     // Import App dynamically to verify full integration
     const { App } = await import('../App');
     const { container } = render(<App />);
 
-    // Verify presence of reveal animation classes
-    const revealDownElements = container.querySelectorAll('.animate-reveal-down');
-    expect(revealDownElements.length).toBeGreaterThanOrEqual(2); // Header & Device Banner
+    expect(screen.getByRole('navigation', { name: 'Dashboard navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Your entrance, at a glance.' })).toBeInTheDocument();
 
     const revealUpElements = container.querySelectorAll('.animate-reveal-up');
     expect(revealUpElements.length).toBeGreaterThanOrEqual(4); // Subheader + 3 Sensor cards + Event table

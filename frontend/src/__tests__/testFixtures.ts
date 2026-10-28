@@ -23,6 +23,9 @@ export class TestEdgeStateMachine {
       deviceId: this.config.deviceId,
       uptimeSeconds: 10,
       doorOpen: false,
+      reedSwitchClosed: true,
+      magnetDetected: true,
+      doorStateEstablished: true,
       lightAdc: 3200,
       lightPercentage: 21.8,
       lightThreshold: this.config.lightThreshold,
@@ -66,6 +69,13 @@ export class TestEdgeStateMachine {
       }
     }
     return open;
+  }
+
+  public setReedSwitch(magnetDetected: boolean, magnetDetectsClosed: boolean = true): boolean {
+    this.telemetry.magnetDetected = magnetDetected;
+    this.telemetry.reedSwitchClosed = magnetDetected;
+    const doorOpen = magnetDetectsClosed ? !magnetDetected : magnetDetected;
+    return this.setDoor(doorOpen);
   }
 
   public pressButton(): boolean {

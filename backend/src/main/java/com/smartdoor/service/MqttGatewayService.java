@@ -14,8 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -47,6 +50,7 @@ public class MqttGatewayService implements MqttCallbackExtended {
     private final ObjectMapper objectMapper;
     private final Map<String, TelemetryDto> latestTelemetryMap = new ConcurrentHashMap<>();
     private final Map<String, Boolean> deviceOnlineMap = new ConcurrentHashMap<>();
+    private final List<SseEmitter> sseEmitters = new CopyOnWriteArrayList<>();
 
     private MqttAsyncClient mqttClient;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -188,6 +192,15 @@ public class MqttGatewayService implements MqttCallbackExtended {
         tel.setDeviceId(deviceId);
         tel.setUptimeSeconds(node.path("uptimeSeconds").asLong(0));
         tel.setDoorOpen(node.path("doorOpen").asBoolean(false));
+        if (node.has("reedSwitchClosed")) {
+            tel.setReedSwitchClosed(node.get("reedSwitchClosed").asBoolean());
+        }
+        if (node.has("magnetDetected")) {
+            tel.setMagnetDetected(node.get("magnetDetected").asBoolean());
+        }
+        if (node.has("doorStateEstablished")) {
+            tel.setDoorStateEstablished(node.get("doorStateEstablished").asBoolean());
+        }
         tel.setLightAdc(node.path("lightAdc").asInt(0));
         tel.setLightPercentage(node.path("lightPercentage").asDouble(0.0));
         tel.setLightThreshold(node.path("lightThreshold").asInt(1500));
@@ -207,6 +220,7 @@ public class MqttGatewayService implements MqttCallbackExtended {
 
         latestTelemetryMap.put(deviceId, tel);
         deviceOnlineMap.put(deviceId, true);
+        broadcastTelemetry(tel);
     }
 
     private void handleEventMessage(String jsonPayload) throws Exception {
@@ -221,6 +235,8 @@ public class MqttGatewayService implements MqttCallbackExtended {
         JsonNode details = node.path("details");
         if (!details.isMissingNode()) {
             if (details.has("doorOpen")) event.setDoorOpen(details.get("doorOpen").asBoolean());
+            if (details.has("reedSwitchClosed")) event.setReedSwitchClosed(details.get("reedSwitchClosed").asBoolean());
+            if (details.has("magnetDetected")) event.setMagnetDetected(details.get("magnetDetected").asBoolean());
             if (details.has("lightOn")) event.setLightOn(details.get("lightOn").asBoolean());
             if (details.has("lightPercentage")) event.setLightPercentage(details.get("lightPercentage").asDouble());
             if (details.has("lightAdc")) event.setLightAdc(details.get("lightAdc").asInt());
@@ -233,6 +249,33 @@ public class MqttGatewayService implements MqttCallbackExtended {
 
         eventRepository.save(event);
         log.info("Persisted genuine hardware door event {} for device {}", eventType, deviceId);
+
+        // Instantly update cached telemetry & broadcast over SSE so UI reflects state in 0ms!
+        TelemetryDto tel = latestTelemetryMap.get(deviceId);
+        if (tel == null) {
+            tel = new TelemetryDto();
+            tel.setDeviceId(deviceId);
+            latestTelemetryMap.put(deviceId, tel);
+        }
+        if (!details.isMissingNode()) {
+            if (details.has("doorOpen")) tel.setDoorOpen(details.get("doorOpen").asBoolean());
+            if (details.has("reedSwitchClosed")) tel.setReedSwitchClosed(details.get("reedSwitchClosed").asBoolean());
+            if (details.has("magnetDetected")) tel.setMagnetDetected(details.get("magnetDetected").asBoolean());
+            if (details.has("lightOn")) tel.setLightOn(details.get("lightOn").asBoolean());
+            if (details.has("lightPercentage")) tel.setLightPercentage(details.get("lightPercentage").asDouble());
+            if (details.has("lightAdc")) tel.setLightAdc(details.get("lightAdc").asInt());
+            if (details.has("isDark")) tel.setIsDark(details.get("isDark").asBoolean());
+            if (details.has("remainingDelayMs")) tel.setRemainingDelayMs(details.get("remainingDelayMs").asLong());
+            if (details.has("offDelayMs")) tel.setOffDelayMs(details.get("offDelayMs").asLong());
+            if (details.has("mode")) tel.setMode(details.get("mode").asText());
+        }
+        tel.setLastHardwareUpdateTimestamp(System.currentTimeMillis());
+        tel.setTimestamp(Instant.now());
+        tel.setConnectionState("CONNECTED");
+        tel.setMqttConnected(true);
+        deviceOnlineMap.put(deviceId, true);
+
+        broadcastTelemetry(tel);
     }
 
     private void handleStatusMessage(String jsonPayload) throws Exception {
@@ -364,6 +407,31 @@ public class MqttGatewayService implements MqttCallbackExtended {
             log.info("Published configuration update to [{}]: {}", topic, payload);
         } catch (Exception e) {
             log.error("Failed to publish config update", e);
+        }
+    }
+
+    public SseEmitter subscribeTelemetryStream() {
+        SseEmitter emitter = new SseEmitter(180_000L); // 3 minutes timeout (client auto-reconnects)
+        sseEmitters.add(emitter);
+        emitter.onCompletion(() -> sseEmitters.remove(emitter));
+        emitter.onTimeout(() -> sseEmitters.remove(emitter));
+        emitter.onError((e) -> sseEmitters.remove(emitter));
+
+        TelemetryDto current = getLatestTelemetry(defaultDeviceId);
+        try {
+            emitter.send(SseEmitter.event().name("telemetry").data(current));
+        } catch (IOException ignored) {}
+
+        return emitter;
+    }
+
+    public void broadcastTelemetry(TelemetryDto tel) {
+        for (SseEmitter emitter : sseEmitters) {
+            try {
+                emitter.send(SseEmitter.event().name("telemetry").data(tel));
+            } catch (Exception e) {
+                sseEmitters.remove(emitter);
+            }
         }
     }
 

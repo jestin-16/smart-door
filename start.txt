@@ -1,29 +1,62 @@
 ==================================================
-  SMARTDOORLIGHT - HOW TO START THE PROJECT
+  SMARTDOORLIGHT - HOW TO FLASH HARDWARE & RUN
 ==================================================
 
-Follow these 4 simple steps to run the project:
+--------------------------------------------------
+HOW TO REWRITE / FLASH FIRMWARE TO ESP32 HARDWARE
+--------------------------------------------------
+
+METHOD A: ONE-CLICK COMMAND LINE (FASTEST)
+-------------------------------------------
+1. Plug your ESP32 into your PC via USB-C (confirm it is on COM7).
+2. If Arduino IDE or any Serial Monitor is open, CLOSE IT so COM7 is free.
+3. Open PowerShell and run this exact command:
+
+& "C:\Program Files\Arduino IDE\resources\app\lib\backend\resources\arduino-cli.exe" compile --upload -p COM7 --fqbn esp32:esp32:esp32 "f:\smartdoor\firmware\smartdoor_firmware"
+
+4. When upload finishes, you will see:
+   "Leaving... Hard resetting via RTS pin..."
+   The ESP32 is now flashed with the verified magnetic reed switch code!
+
+
+METHOD B: VIA ARDUINO IDE (GRAPHICAL)
+--------------------------------------
+1. Plug in the ESP32 via USB-C cable.
+2. Open the Arduino IDE.
+3. Open the file:
+   f:\smartdoor\firmware\smartdoor_firmware\smartdoor_firmware.ino
+4. Select board and port:
+   - Tools -> Board -> esp32 -> ESP32 Dev Module
+   - Tools -> Port -> COM7
+5. Click the "Upload" button (the arrow pointing right).
+6. Wait until it displays "Done uploading".
+
+==================================================
+HOW TO RUN THE COMPLETE SYSTEM (4 SIMPLE STEPS)
+==================================================
 
 --------------------------------------------------
 STEP 1: PHONE HOTSPOT
 --------------------------------------------------
 1. Turn on your mobile hotspot on your phone.
-2. In Hotspot Settings, make sure AP Band is set to "2.4 GHz" (NOT 5 GHz).
-   (Your ESP32 only connects to 2.4 GHz).
+2. In Hotspot Settings, ensure AP Band is set to "2.4 GHz" (NOT 5 GHz).
+   (The ESP32 only connects to 2.4 GHz).
+3. Ensure the SSID and Password in:
+   f:\smartdoor\firmware\smartdoor_firmware\secrets.h
+   match your phone hotspot.
 
 --------------------------------------------------
 STEP 2: PLUG IN THE ESP32
 --------------------------------------------------
 1. Plug the ESP32 into your laptop with the USB-C cable.
-2. The code is already flashed to the board.
-   As soon as it gets power, it will connect to your hotspot automatically.
+2. It boots in <1 second and connects to your hotspot automatically.
 
 --------------------------------------------------
 STEP 3: START THE SERVERS (Run these 3 commands)
 --------------------------------------------------
 Open a terminal in your project folder (f:\smartdoor) and run:
 
-1. Start MQTT & Database:
+1. Start MQTT Broker & PostgreSQL Database:
    cd f:\smartdoor\infrastructure
    docker compose up -d
 
@@ -38,20 +71,55 @@ Open a terminal in your project folder (f:\smartdoor) and run:
 --------------------------------------------------
 STEP 4: OPEN THE DASHBOARD
 --------------------------------------------------
-1. Open your web browser and go to:
+1. Open your web browser and navigate to:
    http://localhost:5173
 
-2. The top bar will show "CONNECTED" in green.
-
---------------------------------------------------
-HOW TO TEST:
---------------------------------------------------
-- Click "Open Door"  --> The physical LED turns ON (if room is dark).
-- Click "Close Door" --> A 15-second countdown starts; then the LED turns OFF.
-- Shine a flashlight on the sensor --> The LED turns OFF (it knows it's bright).
+2. The top bar will display "CONNECTED" in green with live hardware telemetry.
 
 ==================================================
-WIRING REMINDER:
-- LDR Sensor: VCC -> 3.3V, GND -> GND, AO -> GPIO 34
-- White LED:  GPIO 26 -> 220 Ohm resistor -> LED (+) -> LED (-) -> GND
+HOW TO TEST WITH REAL HARDWARE (MAGNET & LDR):
+==================================================
+1. DOOR OPEN + DARK (LED TURNS ON):
+   - Move the neodymium magnet AWAY from the reed switch (>20mm).
+   - If the room is dark (or you cover the LDR sensor with your finger),
+     the physical White LED on GPIO 26 turns ON immediately.
+   - The dashboard updates to:
+     "Door Open" / "SWITCH OPEN (GPIO HIGH)" / "Magnet Not Detected".
+
+2. DOOR CLOSED (15-SECOND SHUTDOWN TIMER):
+   - Bring the neodymium magnet NEAR the reed switch (<15mm).
+   - The dashboard updates to:
+     "Door Closed" / "SWITCH CLOSED (GPIO LOW)" / "Magnet Detected".
+   - The physical LED STAYS ON for exactly 15 seconds.
+   - The dashboard shows the live animated 15s countdown timer.
+   - After 15 seconds expire, the LED turns OFF automatically.
+
+3. REOPEN DOOR DURING COUNTDOWN (CANCELS DELAY):
+   - Bring the magnet close to trigger door close (countdown starts).
+   - Before 15 seconds run out, pull the magnet away again (Door opens).
+   - The shutdown countdown cancels immediately and the LED stays lit!
+
+4. DAYLIGHT / BRIGHT ENVIRONMENT INHIBIT:
+   - Shine a phone flashlight onto the LDR photocell (bright light).
+   - Move the magnet away from the reed switch (Door open).
+   - The LED stays OFF because the room is bright.
+
+==================================================
+PHYSICAL WIRING REMINDER:
+==================================================
+- Magnetic Reed Switch:
+    Terminal 1 -> GPIO 27
+    Terminal 2 -> GND
+    (Uses internal INPUT_PULLUP. No external pull-up resistor needed!)
+
+- LDR Light Sensor:
+    VCC -> 3.3V (SAFETY WARNING: NEVER CONNECT TO 5V)
+    GND -> GND
+    AO  -> GPIO 34
+
+- White Doorway LED:
+    GPIO 26 -> 220 Ohm resistor -> LED Anode (+) -> LED Cathode (-) -> GND
+
+- Shared Ground:
+    All GND wires connect to ESP32 GND pins.
 ==================================================

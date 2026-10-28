@@ -55,10 +55,63 @@ export function useSmartDoor(deviceId: string = 'smartdoor-01') {
   useEffect(() => {
     isMountedRef.current = true;
     fetchHardwareData();
-    const interval = setInterval(fetchHardwareData, 3000);
+
+    // 1. Live Server-Sent Events (SSE) Stream for Instant Sub-100ms Updates
+    let eventSource: EventSource | null = null;
+    let sseTimeoutId: any = null;
+
+    const connectSSE = () => {
+      if (typeof EventSource === 'undefined' || !isMountedRef.current) return;
+      try {
+        eventSource = new EventSource(apiService.getTelemetryStreamUrl());
+
+        eventSource.addEventListener('telemetry', (event: MessageEvent) => {
+          if (!isMountedRef.current) return;
+          try {
+            const data: DeviceTelemetry = JSON.parse(event.data);
+            if (data && data.doorOpen !== undefined && data.connectionState === 'CONNECTED') {
+              setTelemetry(data);
+              setConnectionState('CONNECTED');
+              setStatusMessage(null);
+              setError(null);
+              setLastSuccessfulUpdate(new Date());
+            } else if (data && data.connectionState === 'DISCONNECTED') {
+              setTelemetry(data);
+              setConnectionState('DISCONNECTED');
+              setStatusMessage('Device disconnected — waiting for hardware connection.');
+            }
+          } catch (_) {}
+        });
+
+        eventSource.onerror = () => {
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          // Automatically reconnect SSE stream after 2 seconds on network hiccups
+          if (isMountedRef.current && !sseTimeoutId) {
+            sseTimeoutId = setTimeout(() => {
+              sseTimeoutId = null;
+              connectSSE();
+            }, 2000);
+          }
+        };
+      } catch (_) {}
+    };
+
+    connectSSE();
+
+    // 2. High-Frequency Fallback Polling (1000ms instead of 3000ms)
+    const interval = setInterval(fetchHardwareData, 1000);
 
     return () => {
       isMountedRef.current = false;
+      if (eventSource) {
+        eventSource.close();
+      }
+      if (sseTimeoutId) {
+        clearTimeout(sseTimeoutId);
+      }
       clearInterval(interval);
     };
   }, [fetchHardwareData]);

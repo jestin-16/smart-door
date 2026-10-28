@@ -40,8 +40,10 @@ void MqttManager::begin(const char* wifiSsid, const char* wifiPass) {
             _secureClient.setInsecure();
             Serial.println("[MQTT TLS] Initialized TLS transport (encrypted, direct IP mode).");
         }
+        _secureClient.setNoDelay(true);
         _mqttClient.setClient(_secureClient);
     } else {
+        _wifiClient.setNoDelay(true);
         _mqttClient.setClient(_wifiClient);
     }
 
@@ -102,6 +104,8 @@ void MqttManager::maintainMqtt() {
         }
 
         if (connected) {
+            _wifiClient.setNoDelay(true);
+            _secureClient.setNoDelay(true);
             Serial.println("[MQTT] Connected successfully!");
 
             // Publish online status
@@ -148,6 +152,7 @@ void MqttManager::publishTelemetry(const JsonDocument& doc) {
     String payload;
     serializeJson(doc, payload);
     _mqttClient.publish(_topicTelemetry.c_str(), payload.c_str(), false);
+    _mqttClient.loop(); // Instantly push bytes to network socket
 }
 
 void MqttManager::publishEvent(const char* eventType, const JsonDocument& details) {
@@ -163,6 +168,7 @@ void MqttManager::publishEvent(const char* eventType, const JsonDocument& detail
     String payload;
     serializeJson(eventDoc, payload);
     _mqttClient.publish(_topicEvent.c_str(), payload.c_str(), false);
+    _mqttClient.loop(); // Instantly push bytes to network socket
     Serial.printf("[MQTT EVENT] %s -> %s\n", eventType, payload.c_str());
 }
 

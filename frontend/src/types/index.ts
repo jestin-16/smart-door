@@ -6,6 +6,9 @@ export interface DeviceTelemetry {
   deviceId: string;
   uptimeSeconds?: number;
   doorOpen?: boolean;
+  reedSwitchClosed?: boolean;
+  magnetDetected?: boolean;
+  doorStateEstablished?: boolean;
   lightAdc?: number;
   lightPercentage?: number;
   lightThreshold?: number;
@@ -42,6 +45,8 @@ export interface DoorEvent {
   createdAt: string;
   details?: {
     doorOpen?: boolean;
+    reedSwitchClosed?: boolean;
+    magnetDetected?: boolean;
     lightOn?: boolean;
     lightPercentage?: number;
     lightAdc?: number;
