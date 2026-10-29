@@ -31,13 +31,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-      <div className="glass-card rounded-3xl border border-white/80 shadow-luxury-lg max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto animate-reveal-up">
+    <div className="settings-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div role="dialog" aria-modal="true" aria-labelledby="settings-title" className="settings-panel max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto">
         {/* Modal Header */}
-        <div className="px-6 py-5 border-b border-slate-200/60 flex items-center justify-between">
+        <div className="settings-heading flex items-start justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900">System Parameters</h3>
-            <p className="text-xs text-slate-500">Tune edge thresholds and timer parameters</p>
+            <span className="eyebrow">THE LITTLE PREFERENCES</span>
+            <h3 id="settings-title">Make it feel like home.</h3>
+            <p>Fine-tune your entryway's everyday rhythm.</p>
           </div>
           <button
             onClick={onClose}
@@ -49,20 +50,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-5 text-xs text-slate-700">
+        <div className="settings-body space-y-5 text-xs text-slate-700">
           {/* Threshold setting */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <label className="font-bold text-slate-800 flex items-center space-x-1.5">
+              <label htmlFor="settings-threshold" className="font-bold text-slate-800 flex items-center space-x-1.5">
                 <Sliders className="w-3.5 h-3.5 text-slate-500" />
-                <span>Ambient Darkness Threshold (ADC)</span>
+                <span>Darkness threshold</span>
               </label>
               <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">{threshold} / 4095</span>
             </div>
             <p className="text-[11px] text-slate-500">
-              When ambient light drops below this value, the door opening automatically turns on the light.
+              Set how dark it should be before an arrival turns on the light.
             </p>
             <input
+              id="settings-threshold"
               type="range"
               min="200"
               max="3500"
@@ -76,16 +78,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Off Delay setting */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <label className="font-bold text-slate-800 flex items-center space-x-1.5">
+              <label htmlFor="settings-delay" className="font-bold text-slate-800 flex items-center space-x-1.5">
                 <Timer className="w-3.5 h-3.5 text-slate-500" />
-                <span>Door-Close Light Off Delay (Seconds)</span>
+                <span>Time to settle in</span>
               </label>
               <span className="font-mono font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">{delaySeconds}s</span>
             </div>
             <p className="text-[11px] text-slate-500">
-              Countdown timer started when the door closes before shutting the LED off (Default: 15s).
+              Seconds to leave the light on after the door closes.
             </p>
             <input
+              id="settings-delay"
               type="number"
               min="1"
               max="120"
@@ -97,11 +100,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Device ID */}
           <div className="space-y-1.5">
-            <label className="font-bold text-slate-800 flex items-center space-x-1.5">
+            <label htmlFor="settings-device" className="font-bold text-slate-800 flex items-center space-x-1.5">
               <Cpu className="w-3.5 h-3.5 text-slate-500" />
-              <span>Target Device Identifier</span>
+              <span>Device identifier</span>
             </label>
             <input
+              id="settings-device"
               type="text"
               value={deviceId}
               onChange={(e) => setDeviceId(e.target.value)}
@@ -111,7 +115,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-200/60 flex items-center justify-end space-x-2.5">
+        <div className="settings-actions flex items-center justify-end space-x-2.5">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
@@ -123,7 +127,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className="px-5 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center space-x-1.5 transition-colors shadow-xs"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>Apply Changes</span>
+            <span>Save preferences</span>
           </button>
         </div>
       </div>

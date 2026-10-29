@@ -14,6 +14,10 @@ export function Header({ status, onOpenSettings, onRefresh, isLoading }: HeaderP
         const section = document.getElementById(id);
         if (section && section.getBoundingClientRect().top <= offset) current = id;
       }
+      // A compact Activity section may reach the page bottom before the header.
+      if (window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+        current = 'event-log';
+      }
       setActive(current);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };

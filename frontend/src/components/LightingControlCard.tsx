@@ -36,15 +36,32 @@ export const LightingControlCard: React.FC<LightingControlCardProps> = ({
       <div className="control-action">
         <div className="control-light-setting">
           <span>Entry light</span>
-          <button type="button" className="control-switch" disabled={!hasData} aria-label={lightOn ? 'Turn OFF' : 'Turn ON'} aria-pressed={hasData && lightOn} onClick={() => onToggleLight(!lightOn)}><span /></button>
+          <button
+            type="button"
+            className="control-switch"
+            disabled={!hasData}
+            aria-label={lightOn ? 'Turn OFF' : 'Turn ON'}
+            aria-pressed={hasData && lightOn}
+            onClick={() => onToggleLight(!lightOn)}
+          >
+            <span className="switch-thumb"><i className="thumb-glow" /></span>
+          </button>
         </div>
         <div className="control-mode" data-mode={mode} data-disabled={!hasData} role="group" aria-label="Control mode">
+          <span className="control-mode-pill" aria-hidden="true" />
           <button type="button" disabled={!hasData} aria-pressed={mode === 'AUTO'} onClick={() => onSetMode('AUTO')}>Automatic</button>
           <button type="button" disabled={!hasData} aria-pressed={mode === 'MANUAL'} onClick={() => onSetMode('MANUAL')}>Manual</button>
         </div>
         <div className="control-timer" data-active={!!showTimer}>
-          <div className="control-note"><Timer size={13} aria-hidden="true" /><span>{showTimer ? <><span className="sr-only">Door Closed Auto-Off Timer Active: </span><span>{remainingSeconds}s remaining</span></> : 'Switch-off delay · ' + offDelayMs / 1000 + 's'}</span></div>
-          <div className="control-timer-track" aria-hidden="true"><span style={{ width: progressPercent + '%' }} /></div>
+          <div className="control-note">
+            <span className={`timer-icon-wrap ${showTimer ? 'timer-ticking' : ''}`}>
+              <Timer size={13} aria-hidden="true" />
+            </span>
+            <span>{showTimer ? <><span className="sr-only">Door Closed Auto-Off Timer Active: </span><span>{remainingSeconds}s remaining</span></> : 'Switch-off delay · ' + offDelayMs / 1000 + 's'}</span>
+          </div>
+          <div className="control-timer-track" aria-hidden="true">
+            <span style={{ width: progressPercent + '%' }} className="control-timer-fill" />
+          </div>
         </div>
       </div>
     </article>
@@ -52,4 +69,5 @@ export const LightingControlCard: React.FC<LightingControlCardProps> = ({
 };
 
 export default LightingControlCard;
+
 

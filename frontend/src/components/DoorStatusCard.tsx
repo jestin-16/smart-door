@@ -10,7 +10,7 @@ interface DoorStatusCardProps {
 }
 
 export const DoorStatusCard: React.FC<DoorStatusCardProps> = ({
-  isOpen, reedSwitchClosed, magnetDetected, isConnected,
+  isOpen, reedSwitchClosed, magnetDetected, isConnected, onSetDoorState,
 }) => {
   const hasData = isConnected && isOpen !== undefined;
   const isSwitchClosed = reedSwitchClosed ?? (hasData ? !isOpen : undefined);
@@ -28,7 +28,26 @@ export const DoorStatusCard: React.FC<DoorStatusCardProps> = ({
         <p className="control-description">{!hasData ? 'Your door status will appear when connected.' : isOpen ? 'Door is OPEN. Welcome home.' : 'Door is CLOSED. All settled for now.'}</p>
       </div>
       <div className="control-action">
-        <div className="control-note"><Radio size={15} strokeWidth={1.4} aria-hidden="true" /><span>{hasData ? 'Following your door, in real time.' : 'Waiting for a signal'}</span></div>
+        <div className="control-note">
+          <span className={`signal-icon-wrap ${hasData ? 'signal-live' : ''}`}>
+            <Radio size={14} strokeWidth={1.5} aria-hidden="true" />
+          </span>
+          <span>{hasData ? 'Following your door, in real time.' : 'Waiting for a signal'}</span>
+        </div>
+        {onSetDoorState && (
+          <div className="control-quick-action">
+            <button
+              type="button"
+              className="control-ghost-btn"
+              disabled={!isConnected}
+              onClick={() => onSetDoorState(isOpen ? 'CLOSED' : 'OPEN')}
+              aria-label={isOpen ? "Simulate closing door" : "Simulate opening door"}
+            >
+              <span className="btn-dot" />
+              <span>{isOpen ? 'Simulate Close' : 'Simulate Open'}</span>
+            </button>
+          </div>
+        )}
         <details className="control-details">
           <summary>Sensor details</summary>
           <div className="control-detail-content">
@@ -47,3 +66,4 @@ export const DoorStatusCard: React.FC<DoorStatusCardProps> = ({
 };
 
 export default DoorStatusCard;
+

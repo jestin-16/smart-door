@@ -17,7 +17,7 @@ export const SystemAlert: React.FC<SystemAlertProps> = ({
   if (!error && !isDisconnected) return null;
 
   return (
-    <div className="space-y-3 mb-6">
+    <div className="dashboard-alerts space-y-3 mb-6" role="alert">
       {/* Disconnected Banner */}
       {isDisconnected && (
         <div className="glass-card rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-luxury border-rose-200/80 bg-rose-50/70">
@@ -52,13 +52,14 @@ export const SystemAlert: React.FC<SystemAlertProps> = ({
               <AlertCircle className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-amber-900">System Notification</h4>
+              <h4 className="text-sm font-bold text-amber-900">A quick heads-up</h4>
               <p className="text-xs text-amber-800 mt-0.5">{error}</p>
             </div>
           </div>
           {onDismissError && (
             <button
               onClick={onDismissError}
+              aria-label="Dismiss notification"
               className="p-1.5 rounded-full text-amber-600 hover:text-amber-900 hover:bg-amber-100 transition-colors"
             >
               <X className="w-4 h-4" />

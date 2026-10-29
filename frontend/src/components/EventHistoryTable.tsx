@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import type { DoorEvent, EventType } from '../types';
-import { History, Search, Inbox, ShieldCheck } from 'lucide-react';
+import { Search, Inbox, ArrowDown, X } from 'lucide-react';
 
 interface EventHistoryTableProps {
   events: DoorEvent[];
+  isConnected?: boolean;
 }
 
-export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) => {
+const categories = ['ALL', 'DOOR', 'LIGHT', 'CONFIG'];
+
+export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events, isConnected = false }) => {
   const pageSize = 5;
   const [visibleCount, setVisibleCount] = useState(pageSize);
   const [filterType, setFilterType] = useState<string>('ALL');
@@ -16,90 +19,90 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
     switch (type) {
       case 'DOOR_OPENED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-800 border border-amber-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            DOOR OPENED
+          <span className="journal-badge badge-door-open">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Door Opened</span>
           </span>
         );
       case 'DOOR_CLOSED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            DOOR CLOSED
+          <span className="journal-badge badge-door-closed">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Door Closed</span>
           </span>
         );
       case 'LIGHT_ON':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400/20 text-amber-900 border border-amber-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-glow-amber" />
-            LIGHT ON
+          <span className="journal-badge badge-light-on">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Light ON</span>
           </span>
         );
       case 'LIGHT_OFF':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            LIGHT OFF
+          <span className="journal-badge badge-light-off">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Light OFF</span>
           </span>
         );
       case 'LIGHT_TIMER_STARTED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/10 text-indigo-800 border border-indigo-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-            TIMER STARTED
+          <span className="journal-badge badge-timer">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Timer Started</span>
           </span>
         );
       case 'LIGHT_TIMER_CANCELLED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            TIMER CANCELLED
+          <span className="journal-badge badge-timer">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Timer Cancelled</span>
           </span>
         );
       case 'LIGHT_TIMER_EXPIRED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            TIMER EXPIRED
+          <span className="journal-badge badge-timer">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Timer Expired</span>
           </span>
         );
       case 'MODE_CHANGED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            MODE CHANGED
+          <span className="journal-badge badge-config">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Mode Changed</span>
           </span>
         );
       case 'CONFIG_UPDATED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            CONFIG UPDATED
+          <span className="journal-badge badge-config">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>Config Updated</span>
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
-            {type}
+          <span className="journal-badge badge-default">
+            <i className="journal-dot" aria-hidden="true" />
+            <span>{type}</span>
           </span>
         );
     }
   };
 
   const filteredEvents = events.filter((evt) => {
-    // Category filter
     if (filterType === 'DOOR' && !evt.eventType.startsWith('DOOR')) return false;
     if (filterType === 'LIGHT' && !evt.eventType.startsWith('LIGHT')) return false;
     if (filterType === 'CONFIG' && !['MODE_CHANGED', 'CONFIG_UPDATED'].includes(evt.eventType))
       return false;
 
-    // Search query
     if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
+      const q = searchQuery.trim().toLowerCase();
       const matchType = evt.eventType.toLowerCase().includes(q);
       const matchDesc = evt.details?.description?.toLowerCase().includes(q) || false;
       const matchId = evt.id.toLowerCase().includes(q);
-      return matchType || matchDesc || matchId;
+      const matchLabel = evt.eventType.replaceAll('_', ' ').toLowerCase().includes(q);
+      return matchType || matchDesc || matchId || matchLabel;
     }
 
     return true;
@@ -123,113 +126,114 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
   };
 
   return (
-    <div id="event-log" className="glass-card rounded-3xl shadow-luxury overflow-hidden border border-white/80 transition-all relative">
-      {/* Top accent indicator strip */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-slate-400 via-indigo-500 to-amber-400" />
-
-      {/* Table Header & Controls */}
-      <div className="p-5 sm:p-6 border-b border-slate-200/60 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2.5 rounded-2xl bg-slate-900 text-white shadow-xs">
-            <History className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div>
-            <h3 className="text-sm sm:text-base font-bold text-slate-900">Recent activity</h3>
-            <p className="text-xs text-slate-500">The latest updates from your entryway.</p>
-          </div>
+    <section id="event-log" className="journal-section" aria-labelledby="journal-title">
+      <div className="journal-header">
+        <div className="journal-intro">
+          <span className="eyebrow"><span className="section-number">03</span> ACTIVITY JOURNAL</span>
+          <h2 id="journal-title">Little moments. <span>Quietly noted.</span></h2>
+          <p>Your entryway's story, all in one place.</p>
         </div>
 
-        {/* Filter and Search Bar */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Category Tabs */}
-          <div className="flex items-center bg-slate-100/80 p-1 rounded-full border border-slate-200/60 text-xs shadow-inner">
-            {['ALL', 'DOOR', 'LIGHT', 'CONFIG'].map((cat) => (
+        <div className="journal-toolbar">
+          <div className="journal-filters" role="group" aria-label="Filter events by category" style={{ '--filter-index': categories.indexOf(filterType) } as React.CSSProperties}>
+            <span className="journal-filter-indicator" aria-hidden="true" />
+            {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 onClick={() => { setFilterType(cat); setVisibleCount(pageSize); }}
                 aria-pressed={filterType === cat}
-                className={`px-3 py-1 rounded-full font-bold transition-all ${
-                  filterType === cat
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className="journal-filter-btn"
               >
                 {cat === 'ALL' ? 'All' : cat.charAt(0) + cat.slice(1).toLowerCase()}
               </button>
             ))}
           </div>
 
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="journal-search-wrap">
+            <Search className="journal-search-icon" size={13} aria-hidden="true" />
             <input
               type="text"
-              placeholder="Filter events..." aria-label="Filter events"
+              placeholder="Find a moment..."
+              aria-label="Filter events"
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(pageSize); }}
-              className="pl-8 pr-3 py-1.5 text-xs border border-slate-200/80 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-36 sm:w-48 bg-white/70 shadow-2xs"
+              className="journal-search-input"
             />
+            {searchQuery && <button type="button" className="journal-search-clear" aria-label="Clear search" onClick={() => { setSearchQuery(''); setVisibleCount(pageSize); }}><X size={13} aria-hidden="true" /></button>}
           </div>
         </div>
       </div>
 
-      {/* Table Content */}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-xs">
-          <thead className="bg-slate-100/50 border-b border-slate-200/60 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+      <div className="journal-content">
+      {/* Journal Table Body */}
+      <div className="journal-table-wrap">
+        <table className="journal-table">
+          <caption className="sr-only">Recent entryway activity</caption>
+          <thead>
             <tr>
-              <th className="py-3 px-5 w-28">Timestamp</th>
-              <th className="py-3 px-5 w-48">Event Type</th>
-              <th className="py-3 px-5">Hardware Telemetry &amp; Source</th>
-              <th className="py-3 px-5 w-32 text-right">Device ID</th>
+              <th scope="col" className="col-time">Time</th>
+              <th scope="col" className="col-event">Moment</th>
+              <th scope="col" className="col-details">The details</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100/80 text-slate-700">
+          <tbody>
             {filteredEvents.length > 0 ? (
-              visibleEvents.map((evt) => (
-                <tr key={evt.id} className="hover:bg-white/80 transition-colors">
-                  <td className="py-3 px-5 font-mono text-slate-500 whitespace-nowrap text-[11px] font-semibold">
-                    {formatTimestamp(evt.createdAt)}
+              visibleEvents.map((evt, idx) => (
+                <tr
+                  key={evt.id}
+                  className="journal-row"
+                  style={{ '--row-index': idx % pageSize } as React.CSSProperties}
+                >
+                  <td className="cell-time">
+                    <time dateTime={evt.createdAt}>{formatTimestamp(evt.createdAt)}</time>
+                    <span className="journal-date">{Number.isNaN(Date.parse(evt.createdAt)) ? '--' : new Date(evt.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                   </td>
-                  <td className="py-3 px-5 whitespace-nowrap">{getEventBadge(evt.eventType)}</td>
-                  <td className="py-3 px-5 text-slate-600">
-                    <div>
-                      {evt.details?.triggerSource && (
-                        <span className="font-bold text-slate-800 mr-2 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-mono">
-                          [{evt.details.triggerSource}]
-                        </span>
-                      )}
+                  <td className="cell-event">
+                    {getEventBadge(evt.eventType)}
+                  </td>
+                  <td className="cell-details">
+                    <div className="journal-entry-copy">
                       {evt.details?.description && (
-                        <span className="text-slate-800 font-medium mr-2">{evt.details.description}</span>
+                        <span className="entry-desc">{evt.details.description}</span>
                       )}
-                      <span className="text-slate-400 text-[11px] font-mono">
-                        {evt.details?.lightPercentage !== undefined &&
-                          `Illuminance: ${evt.details.lightPercentage}% | `}
-                        {evt.details?.lightAdc !== undefined &&
-                          `ADC: ${evt.details.lightAdc} | `}
-                        {evt.details?.offDelayMs !== undefined &&
-                          `Delay: ${evt.details.offDelayMs}ms | `}
-                        {evt.details?.mode && `Mode: ${evt.details.mode}`}
-                      </span>
+                      <details className="journal-event-details">
+                      <summary>Event details</summary>
+                      <div className="entry-meta">
+                        <span>Device: {evt.deviceId}</span>
+                        {evt.details?.triggerSource && (
+                          <span className="meta-tag">[{evt.details.triggerSource}]</span>
+                        )}
+                        {evt.details?.lightPercentage !== undefined && (
+                          <span>Illuminance: {evt.details.lightPercentage}%</span>
+                        )}
+                        {evt.details?.lightAdc !== undefined && (
+                          <span>ADC: {evt.details.lightAdc}</span>
+                        )}
+                        {evt.details?.offDelayMs !== undefined && (
+                          <span>Delay: {evt.details.offDelayMs}ms</span>
+                        )}
+                        {evt.details?.mode && (
+                          <span>Mode: {evt.details.mode}</span>
+                        )}
+                      </div>
+                      </details>
                     </div>
-                  </td>
-                  <td className="py-3 px-5 font-mono text-slate-400 text-right text-[11px] font-semibold">
-                    {evt.deviceId}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="py-14 text-center">
-                  <div className="flex flex-col items-center justify-center text-slate-400 space-y-2">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
-                      <Inbox className="w-6 h-6 stroke-1 text-slate-400" />
+                <td colSpan={3} className="cell-empty">
+                  <div className="journal-empty">
+                    <div className="empty-halo" aria-hidden="true">
+                      <Inbox size={20} strokeWidth={1.4} />
                     </div>
-                    <p className="text-sm font-bold text-slate-700">No activity to show</p>
-                    <p className="text-xs text-slate-400 max-w-sm">
-                      {searchQuery
-                        ? 'No events match your search query.'
-                        : 'Open or close the physical door, or change the ambient light to see events here.'}
+                    <p className="empty-headline">No activity to show</p>
+                    <p className="empty-subtext">
+                      {searchQuery || filterType !== 'ALL'
+                        ? 'No moments match this view. Try another filter or search.'
+                        : 'Your next arrival starts the story. Door and lighting activity will appear here.'}
                     </p>
                   </div>
                 </td>
@@ -240,20 +244,41 @@ export const EventHistoryTable: React.FC<EventHistoryTableProps> = ({ events }) 
       </div>
 
       {/* Footer bar */}
-      <div className="p-3 px-6 bg-slate-50/60 border-t border-slate-200/50 flex flex-wrap gap-2 items-center justify-between text-[11px] text-slate-500">
-        <span className="flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          Entryway activity history
+      <div className="journal-footer">
+        <div className="journal-footer-info">
+        <span className="journal-status" aria-live="polite">
+          Showing {visibleEvents.length} of {filteredEvents.length} events
         </span>
-        <div className="activity-pagination">
-          <span aria-live="polite">Showing {visibleEvents.length} of {filteredEvents.length} events</span>
-          {visibleCount > pageSize && <button className="activity-less" onClick={() => setVisibleCount(pageSize)}>Show less</button>}
-          {visibleCount < filteredEvents.length && <button className="activity-more" onClick={() => setVisibleCount(count => count + pageSize)}>Show more <span aria-hidden="true">+</span></button>}
+        <span className="controls-live"><i className={isConnected ? 'status-dot online' : 'status-dot'} />{isConnected ? 'In sync with your entryway' : 'Waiting for your entryway'}</span>
+        </div>
+        <div className="journal-actions">
+          {visibleCount > pageSize && (
+            <button
+              type="button"
+              className="action-less"
+              onClick={() => setVisibleCount(pageSize)}
+            >
+              Show less
+            </button>
+          )}
+          {visibleCount < filteredEvents.length && (
+            <button
+              type="button"
+              className="action-more"
+              onClick={() => setVisibleCount((count) => count + pageSize)}
+            >
+              <span>Show more</span>
+              <ArrowDown className="more-plus" size={13} aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
-    </div>
+      </div>
+    </section>
   );
 };
 
 export default EventHistoryTable;
+
+
 

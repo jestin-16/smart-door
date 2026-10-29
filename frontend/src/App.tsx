@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useSmartDoor } from './hooks/useSmartDoor';
+import { useDashboardReveal } from './hooks/useDashboardReveal';
+import { ArrowUpRight, ChevronDown, Radio } from 'lucide-react';
 import { Header } from './components/Header';
 import { DeviceStatusBanner } from './components/DeviceStatusBanner';
 import { DoorwayHeroVisualizer } from './components/DoorwayHeroVisualizer';
@@ -29,6 +31,7 @@ export function App() {
   } = useSmartDoor();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const dashboardRef = useDashboardReveal();
   const isConnected = connectionState === 'CONNECTED';
 
   const handleRefresh = () => {
@@ -36,7 +39,7 @@ export function App() {
   };
 
   return (
-    <div className="dashboard-shell min-h-screen relative overflow-x-hidden flex flex-col selection:bg-amber-200 selection:text-amber-950 font-sans">
+    <div className="dashboard-shell min-h-screen relative overflow-x-clip flex flex-col font-sans">
       {/* 1. Floating Pill Header with Smooth Reveal Down */}
       <div className="dashboard-header">
         <Header
@@ -49,6 +52,7 @@ export function App() {
 
       {/* 3. Main Dashboard Body with Staggered Cascade Entrance */}
       <main
+        ref={dashboardRef}
         className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8"
       >
         {/* Error Notification */}
@@ -62,13 +66,13 @@ export function App() {
           </div>
         )}
 
-        <section className="overview-heading animate-reveal-up">
-          <div><p className="eyebrow">HOME OVERVIEW</p><h1>Your entrance, at a glance.</h1><p>A little awareness. A more welcoming home.</p></div>
+        <section className="overview-heading overview-heading-compact animate-reveal-up" aria-labelledby="overview-title">
+          <h1 id="overview-title">Your entrance, at a glance.</h1>
           <span className="overview-location"><span className={isConnected ? 'status-dot online' : 'status-dot'} />{isConnected ? 'Live from your entryway' : 'Waiting for live data'}</span>
         </section>
 
         {/* Hero Architectural Digital Twin */}
-        <div className="animate-reveal-up anim-delay-150">
+        <div className="hero-stage animate-reveal-up anim-delay-150">
           <DoorwayHeroVisualizer
             doorOpen={telemetry?.doorOpen}
             reedSwitchClosed={telemetry?.reedSwitchClosed}
@@ -88,14 +92,14 @@ export function App() {
         </div>
 
         <section id="hardware-cards" className="controls-workspace" aria-labelledby="controls-title">
-          <div className="controls-intro animate-reveal-up anim-delay-150">
-            <span className="eyebrow">MAKE YOURSELF AT HOME</span>
+          <div className="controls-intro animate-reveal-up anim-delay-150" data-reveal>
+            <span className="eyebrow"><span className="section-number">02</span> YOUR COMFORT, YOUR WAY</span>
             <h2 id="controls-title">Small details.<br /><span>A calmer home.</span></h2>
             <p>A feel for your surroundings.<br />A little control over your comfort.</p>
             <span className="controls-live"><i className={isConnected ? 'status-dot online' : 'status-dot'} />{isConnected ? 'In sync with your entryway' : 'Waiting for your entryway'}</span>
           </div>
           <div className="controls-flow">
-          <div className="animate-reveal-up anim-delay-200">
+          <div className="animate-reveal-up anim-delay-200" data-reveal>
             <DoorStatusCard
               isOpen={telemetry?.doorOpen}
               reedSwitchClosed={telemetry?.reedSwitchClosed}
@@ -105,7 +109,7 @@ export function App() {
             />
           </div>
 
-          <div className="animate-reveal-up anim-delay-350">
+          <div className="animate-reveal-up anim-delay-350" data-reveal>
             <AmbientLightCard
               lightPercentage={telemetry?.lightPercentage}
               lightAdc={telemetry?.lightAdc}
@@ -117,7 +121,7 @@ export function App() {
             />
           </div>
 
-          <div className="animate-reveal-up anim-delay-500">
+          <div className="animate-reveal-up anim-delay-500" data-reveal>
             <LightingControlCard
               lightOn={telemetry?.lightOn}
               mode={telemetry?.mode || 'AUTO'}
@@ -134,11 +138,11 @@ export function App() {
 
 
         {/* 5. Event History & Audit Table */}
-        <div className="animate-reveal-up anim-delay-650">
-          <EventHistoryTable events={events} />
+        <div className="animate-reveal-up anim-delay-650" data-reveal>
+          <EventHistoryTable events={events} isConnected={isConnected} />
         </div>
 
-        <details className="device-details"><summary>Device information</summary>      {/* Connection details */}
+        <details className="device-details"><summary><span><Radio size={15} aria-hidden="true" />Device information</span><span className="device-summary-hint">Connection &amp; diagnostics <ChevronDown size={14} aria-hidden="true" /></span></summary>
       <div className="connection-strip animate-fade-in">
         <DeviceStatusBanner
           telemetry={telemetry}
@@ -162,15 +166,10 @@ export function App() {
       )}
 
       {/* 7. Footer with Gentle Fade In */}
-      <footer className="glass-panel border-t border-slate-200/80 mt-16 py-8 text-center text-xs text-slate-500 animate-fade-in anim-delay-800">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold text-slate-800">SmartDoorLight</span>
-            <span>&bull; A more thoughtful entrance.</span>
-          </div>
-          <span className="font-mono text-slate-400 text-[11px]">
-            Designed around your everyday.
-          </span>
+      <footer className="dashboard-footer">
+        <div>
+          <p><span className="footer-brand">smartdoor.</span> <span>Designed around your everyday.</span></p>
+          <a href="#hero-twin">Back to overview <ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
       </footer>
     </div>
