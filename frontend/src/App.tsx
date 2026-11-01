@@ -74,16 +74,16 @@ export function App() {
         {/* Hero Architectural Digital Twin */}
         <div className="hero-stage animate-reveal-up anim-delay-150">
           <DoorwayHeroVisualizer
-            doorOpen={telemetry?.doorOpen}
-            reedSwitchClosed={telemetry?.reedSwitchClosed}
-            magnetDetected={telemetry?.magnetDetected}
-            lightOn={telemetry?.lightOn}
-            isDark={telemetry?.isDark}
-            lightPercentage={telemetry?.lightPercentage}
-            lightAdc={telemetry?.lightAdc}
+            doorOpen={telemetry?.doorOpen ?? undefined}
+            reedSwitchClosed={telemetry?.reedSwitchClosed ?? undefined}
+            magnetDetected={telemetry?.magnetDetected ?? undefined}
+            lightOn={telemetry?.lightOn ?? undefined}
+            isDark={telemetry?.isDark ?? undefined}
+            lightPercentage={telemetry?.lightPercentage ?? undefined}
+            lightAdc={telemetry?.lightAdc ?? undefined}
             mode={telemetry?.mode || 'AUTO'}
-            timerActive={telemetry?.timerActive}
-            remainingDelayMs={telemetry?.remainingDelayMs || 0}
+            timerActive={telemetry?.timerActive ?? undefined}
+            remainingDelayMs={telemetry?.remainingDelayMs ?? 0}
             offDelayMs={config?.offDelayMs || telemetry?.offDelayMs || 15000}
             isConnected={isConnected}
             onSetDoorState={setDoorState}
@@ -101,9 +101,9 @@ export function App() {
           <div className="controls-flow">
           <div className="animate-reveal-up anim-delay-200" data-reveal>
             <DoorStatusCard
-              isOpen={telemetry?.doorOpen}
-              reedSwitchClosed={telemetry?.reedSwitchClosed}
-              magnetDetected={telemetry?.magnetDetected}
+              isOpen={telemetry?.doorOpen ?? undefined}
+              reedSwitchClosed={telemetry?.reedSwitchClosed ?? undefined}
+              magnetDetected={telemetry?.magnetDetected ?? undefined}
               isConnected={isConnected}
               onSetDoorState={setDoorState}
             />
@@ -111,11 +111,11 @@ export function App() {
 
           <div className="animate-reveal-up anim-delay-350" data-reveal>
             <AmbientLightCard
-              lightPercentage={telemetry?.lightPercentage}
-              lightAdc={telemetry?.lightAdc}
+              lightPercentage={telemetry?.lightPercentage ?? undefined}
+              lightAdc={telemetry?.lightAdc ?? undefined}
               lightThreshold={config?.lightThreshold || telemetry?.lightThreshold || 2000}
               lightHysteresis={telemetry?.lightHysteresis || 100}
-              isDark={telemetry?.isDark}
+              isDark={telemetry?.isDark ?? undefined}
               isConnected={isConnected}
               onUpdateThreshold={(threshold) => updateConfiguration({ lightThreshold: threshold })}
             />
@@ -123,10 +123,10 @@ export function App() {
 
           <div className="animate-reveal-up anim-delay-500" data-reveal>
             <LightingControlCard
-              lightOn={telemetry?.lightOn}
+              lightOn={telemetry?.lightOn ?? undefined}
               mode={telemetry?.mode || 'AUTO'}
-              timerActive={telemetry?.timerActive}
-              remainingDelayMs={telemetry?.remainingDelayMs || 0}
+              timerActive={telemetry?.timerActive ?? undefined}
+              remainingDelayMs={telemetry?.remainingDelayMs ?? 0}
               offDelayMs={config?.offDelayMs || telemetry?.offDelayMs || 15000}
               isConnected={isConnected}
               onSetMode={setLightingMode}

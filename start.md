@@ -40,8 +40,8 @@ Complete step-by-step instructions to run, flash, and test the **SmartDoorLight*
 > 1. Go to **Settings** $\rightarrow$ **Personal Hotspot** $\rightarrow$ **Hotspot Settings**.
 > 2. Set **AP Band** to **2.4 GHz** (not 5 GHz).
 
-* **Wi-Fi SSID**: Configured in `firmware/smartdoor_firmware/secrets.h` (e.g. `"realme 9 5G Speed Edition"`).
-* **Wi-Fi Password**: Empty string `""` for open hotspots, or your hotspot password.
+* **Wi-Fi SSID**: Configured in `firmware/smartdoor_firmware/secrets.h` (e.g. `"Amal Jyothi New"`).
+* **Wi-Fi Password**: `"amaljyothi"`.
 * **MQTT Broker Host**: Your PC's local IP address on Wi-Fi (e.g. `"10.41.210.66"`).
 
 ---

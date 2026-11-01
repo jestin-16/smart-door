@@ -33,15 +33,17 @@ export const DoorwayHeroVisualizer: React.FC<DoorwayHeroVisualizerProps> = ({
   isConnected,
 }) => {
   const [motionPaused, setMotionPaused] = useState(false);
-  const hasData = isConnected && doorOpen !== undefined && lightOn !== undefined;
-  const remainingSec = (remainingDelayMs / 1000).toFixed(1);
-  const totalSec = offDelayMs / 1000;
-  const timerPercent = timerActive && offDelayMs > 0 ? Math.min(100, Math.max(0, (remainingDelayMs / offDelayMs) * 100)) : 0;
+  const hasData = Boolean(isConnected && doorOpen != null && lightOn != null);
+  const safeRemainingMs = typeof remainingDelayMs === 'number' ? remainingDelayMs : 0;
+  const safeOffDelayMs = typeof offDelayMs === 'number' && offDelayMs > 0 ? offDelayMs : 15000;
+  const remainingSec = (safeRemainingMs / 1000).toFixed(1);
+  const totalSec = safeOffDelayMs / 1000;
+  const timerPercent = timerActive && safeOffDelayMs > 0 ? Math.min(100, Math.max(0, (safeRemainingMs / safeOffDelayMs) * 100)) : 0;
 
   return (
-    <section id="hero-twin" className="entrance-panel cinematic-hero" aria-labelledby="entrance-title" data-online={hasData} data-illuminated={hasData && lightOn} data-motion-paused={motionPaused}>
+    <section id="hero-twin" className="entrance-panel entrance-hero" aria-labelledby="entrance-title" data-online={hasData} data-illuminated={hasData && lightOn} data-motion-paused={motionPaused}>
       <div className="entrance-copy">
-        <span className="eyebrow hero-label"><span /> YOUR FRONT DOOR</span>
+        <span className="eyebrow hero-label"><span className="section-number">01</span> YOUR FRONT DOOR</span>
         <h2 id="entrance-title">A warm welcome.<br /><span>Every time.</span></h2>
         <p>Know when your door opens.<br />Let the light take care of the rest.</p>
 
@@ -68,7 +70,7 @@ export const DoorwayHeroVisualizer: React.FC<DoorwayHeroVisualizerProps> = ({
         </div>
         <div className="hero-scene-stage">
           <div className="hero-scene-light" aria-hidden="true" />
-          <div className="hero-wall-lines" aria-hidden="true" />
+          <div className="hero-scene-arch" aria-hidden="true" />
           <div className="hero-ground" aria-hidden="true" />
           <ArchitecturalDoorScene
             doorOpen={doorOpen}

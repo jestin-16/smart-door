@@ -45,9 +45,9 @@
 
 // ADC Sampling window, smoothing & hysteresis
 #define LDR_SAMPLE_COUNT 8
-// Real sensor readings: Bright ~784-845, Dark ~3206-3228.
+// Real sensor readings: Bright ~784-1400, Dark ~3000-3500.
 // Higher ADC value indicates DARKER environment.
-#define DEFAULT_LIGHT_THRESHOLD 2000   // Midpoint threshold (0-4095 12-bit ADC)
+#define DEFAULT_LIGHT_THRESHOLD 2600   // Calibrated threshold to prevent daytime triggering (0-4095 12-bit ADC)
 #define DEFAULT_LIGHT_HYSTERESIS 100   // Hysteresis window (prevents rapid switching)
 
 // Telemetry periodic broadcast interval (ms)

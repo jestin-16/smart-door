@@ -12,7 +12,7 @@ interface DoorStatusCardProps {
 export const DoorStatusCard: React.FC<DoorStatusCardProps> = ({
   isOpen, reedSwitchClosed, magnetDetected, isConnected, onSetDoorState,
 }) => {
-  const hasData = isConnected && isOpen !== undefined;
+  const hasData = Boolean(isConnected && isOpen != null);
   const isSwitchClosed = reedSwitchClosed ?? (hasData ? !isOpen : undefined);
   const isMagDetected = magnetDetected ?? isSwitchClosed;
 

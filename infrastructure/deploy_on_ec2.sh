@@ -55,9 +55,21 @@ if [ ! -f "${ENV_FILE}" ]; then
     echo ">>> [IMPORTANT] Save these credentials in a secure password manager!"
 fi
 
-# Ensure Mosquitto directories exist
+# Ensure Mosquitto and SSL directories exist
 mkdir -p "${SCRIPT_DIR}/mosquitto/certs"
 mkdir -p "${SCRIPT_DIR}/mosquitto/config/conf.d"
+mkdir -p "${SCRIPT_DIR}/ssl"
+
+# Ensure SSL origin certificate is initialized
+if [ ! -f "${SCRIPT_DIR}/ssl/server.crt" ]; then
+    echo ">>> Generating origin SSL certificate for smartdoor.jestin16.dev..."
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout "${SCRIPT_DIR}/ssl/server.key" \
+        -out "${SCRIPT_DIR}/ssl/server.crt" \
+        -subj "/CN=smartdoor.jestin16.dev"
+    chmod 644 "${SCRIPT_DIR}/ssl/server.crt"
+    chmod 600 "${SCRIPT_DIR}/ssl/server.key"
+fi
 
 # Ensure Mosquitto password file is initialized
 if [ ! -f "${SCRIPT_DIR}/mosquitto/config/password_file" ]; then

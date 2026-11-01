@@ -34,7 +34,7 @@ public class ConfigController {
 
         DeviceConfig config = configRepository.findById(targetId)
                 .orElseGet(() -> {
-                    DeviceConfig newConfig = new DeviceConfig(targetId, 1500, 15000L, true);
+                    DeviceConfig newConfig = new DeviceConfig(targetId, 2600, 15000L, true);
                     return configRepository.save(newConfig);
                 });
 

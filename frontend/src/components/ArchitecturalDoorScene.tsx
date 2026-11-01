@@ -29,13 +29,13 @@ export const ArchitecturalDoorScene: React.FC<ArchitecturalDoorSceneProps> = ({
   lightPercentage,
   isConnected,
 }) => {
-  const hasData = isConnected && doorOpen !== undefined && lightOn !== undefined;
+  const hasData = Boolean(isConnected && doorOpen != null && lightOn != null);
   const isTargetOpen = Boolean(hasData && doorOpen);
   const isTargetLit = Boolean(hasData && lightOn);
 
   // Derived ambient light multiplier for light spill intensity
   const ambientFactor =
-    lightPercentage !== undefined
+    typeof lightPercentage === 'number'
       ? Math.max(0.35, Math.min(1.0, (100 - lightPercentage * 0.35) / 100))
       : 0.85;
 

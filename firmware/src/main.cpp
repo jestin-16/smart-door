@@ -6,6 +6,14 @@
 #include "lighting_controller.h"
 #include "mqtt_manager.h"
 
+#ifndef MQTT_BROKER_HOST
+#define MQTT_BROKER_HOST "15.252.238.128"
+#endif
+
+#ifndef MQTT_BROKER_PORT
+#define MQTT_BROKER_PORT 1883
+#endif
+
 #ifndef MQTT_USE_TLS
 #define MQTT_USE_TLS false
 #endif

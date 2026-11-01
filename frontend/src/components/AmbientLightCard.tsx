@@ -15,13 +15,14 @@ interface AmbientLightCardProps {
  * Custom hook to smoothly interpolate numerical changes with a damped cubic deceleration.
  * Initializes synchronously to `value` so tests and initial render have exact numbers with no flash.
  */
-function useSmoothNumber(value: number | undefined, precision = 1): number | undefined {
-  const [displayValue, setDisplayValue] = useState<number | undefined>(value);
+function useSmoothNumber(value: number | undefined | null, precision = 1): number | undefined {
+  const safeVal = typeof value === 'number' && !isNaN(value) ? value : undefined;
+  const [displayValue, setDisplayValue] = useState<number | undefined>(safeVal);
   const animFrameRef = useRef<number | null>(null);
-  const currentValRef = useRef<number | undefined>(value);
+  const currentValRef = useRef<number | undefined>(safeVal);
 
   useEffect(() => {
-    if (value === undefined) {
+    if (safeVal === undefined) {
       animFrameRef.current = requestAnimationFrame(() => {
         setDisplayValue(undefined);
         currentValRef.current = undefined;
@@ -35,8 +36,8 @@ function useSmoothNumber(value: number | undefined, precision = 1): number | und
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (currentValRef.current === undefined || reducedMotion) {
       animFrameRef.current = requestAnimationFrame(() => {
-        currentValRef.current = value;
-        setDisplayValue(value);
+        currentValRef.current = safeVal;
+        setDisplayValue(safeVal);
       });
       return () => {
         if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -44,7 +45,7 @@ function useSmoothNumber(value: number | undefined, precision = 1): number | und
     }
 
     const startVal = currentValRef.current;
-    const targetVal = value;
+    const targetVal = safeVal;
     if (startVal === targetVal) return;
 
     let startTime: number | undefined;
@@ -77,7 +78,7 @@ function useSmoothNumber(value: number | undefined, precision = 1): number | und
         cancelAnimationFrame(animFrameRef.current);
       }
     };
-  }, [value, precision]);
+  }, [safeVal, precision]);
 
   return displayValue;
 }
@@ -86,13 +87,13 @@ export const AmbientLightCard: React.FC<AmbientLightCardProps> = ({
   lightPercentage, lightAdc, lightThreshold = 2000, lightHysteresis = 100,
   isDark, isConnected, onUpdateThreshold,
 }) => {
-  const hasData = isConnected && lightPercentage !== undefined && lightAdc !== undefined;
+  const hasData = Boolean(isConnected && lightPercentage != null && lightAdc != null);
 
   // Smoothly interpolated values for seamless visual transitions
   const displayPercentage = useSmoothNumber(lightPercentage, 1);
   const displayAdc = useSmoothNumber(lightAdc, 0);
 
-  const formattedPercentage = displayPercentage !== undefined
+  const formattedPercentage = typeof displayPercentage === 'number'
     ? (Number.isInteger(lightPercentage) && Number.isInteger(displayPercentage)
         ? String(displayPercentage)
         : displayPercentage.toFixed(1))
@@ -139,7 +140,7 @@ export const AmbientLightCard: React.FC<AmbientLightCardProps> = ({
           />
         </div>
 
-        <p className="control-description">{!hasData ? 'Awaiting sensor reading' : isDark ? 'A softer light for a darker evening.' : 'A little daylight is all you need.'}</p>
+        <p className="control-description">{!hasData ? 'Awaiting sensor reading' : isDark ? 'Dim ambient light detected — doorway lighting armed.' : 'Sufficient daylight detected — automatic lighting inactive.'}</p>
       </div>
       <div className="control-action">
         <div className="control-setting">

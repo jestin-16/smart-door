@@ -17,10 +17,12 @@ export const LightingControlCard: React.FC<LightingControlCardProps> = ({
   lightOn, mode = 'AUTO', timerActive, remainingDelayMs = 0, offDelayMs = 15000,
   isConnected, onSetMode, onToggleLight,
 }) => {
-  const hasData = isConnected && lightOn !== undefined;
-  const showTimer = hasData && timerActive;
-  const remainingSeconds = (remainingDelayMs / 1000).toFixed(1);
-  const progressPercent = showTimer && offDelayMs > 0 ? Math.max(0, Math.min(100, (remainingDelayMs / offDelayMs) * 100)) : 0;
+  const hasData = Boolean(isConnected && lightOn != null);
+  const showTimer = Boolean(hasData && timerActive);
+  const safeRemainingMs = typeof remainingDelayMs === 'number' ? remainingDelayMs : 0;
+  const safeOffDelayMs = typeof offDelayMs === 'number' && offDelayMs > 0 ? offDelayMs : 15000;
+  const remainingSeconds = (safeRemainingMs / 1000).toFixed(1);
+  const progressPercent = showTimer && safeOffDelayMs > 0 ? Math.max(0, Math.min(100, (safeRemainingMs / safeOffDelayMs) * 100)) : 0;
 
   return (
     <article className="control-row" data-online={hasData} data-lit={hasData && lightOn}>
