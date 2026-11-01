@@ -58,12 +58,18 @@ export const ArchitecturalDoorScene: React.FC<ArchitecturalDoorSceneProps> = ({
       }
     >
       <div className="scene-wall" aria-hidden="true">
-        {/* Overhead Entrance Sconce Fitting */}
-        <div className="scene-lamp" />
-        <div className="scene-beam" />
+        {/* The shade, bulb, and beam swing together from the ceiling mount. */}
+        <div className="pendant-mount" />
+        <div className="scene-pendant">
+          <div className="pendant-cord" />
+          <div className="scene-beam" />
+          <div className="pendant-bulb" />
+          <div className="scene-lamp" />
+        </div>
         <div className="scene-floor" />
+        <div className="doorstep" />
 
-        {/* Volumetric Warm Light Spill Wedge across Floor and Mat */}
+        {/* Warm floor light expands as the doorway opens. */}
         <div className="door-light-spill" />
 
         {/* Floating Atmospheric Dust Motes drifting inside the warm light cone */}
@@ -85,7 +91,7 @@ export const ArchitecturalDoorScene: React.FC<ArchitecturalDoorSceneProps> = ({
         </div>
 
         {/* Welcome Mat with Subtle Ambient Gleam */}
-        <div className="scene-doormat" />
+        <div className="scene-doormat"><span>WELCOME</span></div>
 
         {/* Physical Floor Contact Shadow */}
         <div className="door-shadow" />
@@ -96,10 +102,12 @@ export const ArchitecturalDoorScene: React.FC<ArchitecturalDoorSceneProps> = ({
             <span />
           </div>
 
-          {/* Solid White-Oak Door Leaf with 3D Left-Hinge Pivot */}
+          {/* Fluted walnut leaf with a glass inset and brass hardware. */}
           <div className="door-leaf">
             <div className="door-inlay door-inlay-top" />
             <div className="door-inlay door-inlay-bottom" />
+            <div className="door-peephole" />
+            <div className="door-mail-slot" />
             <div className="door-lock" />
 
             {/* Solid Brass Handle with Mechanical Depression Reaction */}
