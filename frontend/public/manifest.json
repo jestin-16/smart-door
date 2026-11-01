@@ -1,0 +1,61 @@
+{
+  "name": "SmartDoor — IoT Monitoring & Lighting",
+  "short_name": "SmartDoor",
+  "description": "Real-time ESP32 Smart Door IoT Monitoring & Lighting Dashboard",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#57765d",
+  "background_color": "#f8f9f6",
+  "id": "com.smartdoor.app",
+  "categories": ["lifestyle", "utilities", "smart home"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Door Status",
+      "short_name": "Door",
+      "description": "View physical door reed switch status",
+      "url": "/#door",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ambient Light",
+      "short_name": "Light",
+      "description": "Check ambient illuminance and adjust threshold",
+      "url": "/#ambient",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

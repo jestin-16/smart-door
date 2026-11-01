@@ -11,6 +11,7 @@ import { LightingControlCard } from './components/LightingControlCard';
 import { EventHistoryTable } from './components/EventHistoryTable';
 import { SettingsModal } from './components/SettingsModal';
 import { SystemAlert } from './components/SystemAlert';
+import { PwaInstallBanner } from './components/PwaInstallBanner';
 
 export function App() {
   const {
@@ -154,6 +155,8 @@ export function App() {
 
 </details>
       </main>
+
+      <PwaInstallBanner />
 
       {/* 6. Settings Modal */}
       {config && (
