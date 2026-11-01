@@ -15,25 +15,25 @@ export const DOOR_ANIMATION_CONFIG = {
   targetOpenAngle: -74,        // Open angle in degrees (-74°)
   overshootAmountDeg: 2.8,     // Momentum overshoot past resting target (~2.8°)
 
-  // 3. Synchronized Durations & Curves (Calm, architectural pace synced with lighting)
-  openDurationMs: 1300,        // Calibrated graceful open duration (ms)
-  openEasing: 'cubic-bezier(0.18, 0.96, 0.26, 1.0)',
-  closeDurationMs: 1100,       // Calibrated weighted close duration (ms)
-  closeEasing: 'cubic-bezier(0.28, 0.08, 0.2, 1.0)',
+  // 3. Synchronized Durations & Curves (Instant real-time IoT sync)
+  openDurationMs: 260,         // Crisp, instantaneous open duration (ms)
+  openEasing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+  closeDurationMs: 220,        // Crisp, solid close duration (ms)
+  closeEasing: 'cubic-bezier(0.2, 0, 0, 1)',
 
   // 4. Latch & Handle Mechanics
-  anticipationDurationMs: 110, // Handle depression before swing release (ms)
+  anticipationDurationMs: 40,  // Fast handle depression (ms)
   handleMaxAngle: 11,          // Handle downward turn during latch release (deg)
   latchCompressionPx: 1.2,     // Micro inward compression against frame stop (px)
 
   // 5. Closing Contact & Settle
   contactReboundDamping: 0.16, // Velocity coefficient on frame stop contact
-  latchSeatClickDurationMs: 90,// Duration of handle latch click on seat (ms)
+  latchSeatClickDurationMs: 40,// Duration of handle latch click on seat (ms)
   latchSeatClickAngle: 3.5,    // Downward latch click angle (deg)
 
   // 6. Lighting & Atmosphere (100% Synchronized with Door Opening & Closing)
-  lightOpenSyncDurationMs: 1300, // Light unfolds in exact unison with door open
-  lightCloseSyncDurationMs: 1100,// Light narrows in exact unison with door close
+  lightOpenSyncDurationMs: 260, // Light unfolds in exact unison with door open
+  lightCloseSyncDurationMs: 220,// Light narrows in exact unison with door close
   baseLightIntensity: 0.92,    // Warm light wedge intensity multiplier
   dustMoteCount: 8,            // Count of atmospheric dust motes
   matHighlightIntensity: 0.35, // Welcome mat illumination factor
