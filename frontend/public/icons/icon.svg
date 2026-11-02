@@ -1,66 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
   <defs>
     <!-- Background Gradient -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4a633f"/>
-      <stop offset="50%" stop-color="#3d5434"/>
-      <stop offset="100%" stop-color="#2c3e25"/>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3d5635"/>
+      <stop offset="60%" stop-color="#2d4227"/>
+      <stop offset="100%" stop-color="#1f2f1b"/>
     </linearGradient>
 
     <!-- Warm Light Spill Gradient -->
-    <radialGradient id="lightGlow" cx="60%" cy="45%" r="65%">
+    <radialGradient id="iconLightGlow" cx="62%" cy="46%" r="68%">
       <stop offset="0%" stop-color="#fff8db" stop-opacity="0.95"/>
-      <stop offset="35%" stop-color="#fce19a" stop-opacity="0.65"/>
-      <stop offset="70%" stop-color="#f5c862" stop-opacity="0.25"/>
+      <stop offset="35%" stop-color="#fce19a" stop-opacity="0.7"/>
+      <stop offset="70%" stop-color="#f5c862" stop-opacity="0.3"/>
       <stop offset="100%" stop-color="#f5c862" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Door Leaf Wood Gradient -->
-    <linearGradient id="doorLeafGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <!-- Door Leaf Wood / Forest Gradient -->
+    <linearGradient id="iconDoorLeaf" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#8ba17c"/>
       <stop offset="60%" stop-color="#738965"/>
-      <stop offset="100%" stop-color="#5f7451"/>
+      <stop offset="100%" stop-color="#556c48"/>
     </linearGradient>
 
     <!-- Door Inner Shadow -->
-    <linearGradient id="innerShadow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#1f2c1a" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="#354a2e" stop-opacity="0.2"/>
+    <linearGradient id="iconInnerShadow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#162213" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#283a22" stop-opacity="0.3"/>
     </linearGradient>
   </defs>
 
-  <!-- Base Icon Canvas / Squircle (Maskable Safe) -->
-  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
-  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="#7e9c70" stroke-width="3" opacity="0.4"/>
+  <!-- Base Icon Squircle (Maskable safe area) -->
+  <rect width="512" height="512" rx="116" fill="url(#iconBg)"/>
+  <rect width="502" height="502" x="5" y="5" rx="111" fill="none" stroke="#7e9c70" stroke-width="4" opacity="0.35"/>
 
   <!-- Warm Light Spill emerging through doorway -->
-  <polygon points="180,120 400,80 430,420 180,390" fill="url(#lightGlow)"/>
-
-  <!-- Architectural Door Frame Outer Trim -->
-  <rect x="144" y="96" width="180" height="310" rx="10" fill="none" stroke="#e8eedf" stroke-width="14"/>
-  <line x1="130" y1="406" x2="338" y2="406" stroke="#c2cfae" stroke-width="12" stroke-linecap="round"/>
+  <polygon points="176,120 405,82 438,422 176,394" fill="url(#iconLightGlow)"/>
 
   <!-- Door Interior Wall Aperture -->
-  <rect x="154" y="106" width="160" height="290" fill="url(#innerShadow)"/>
+  <rect x="154" y="106" width="160" height="290" rx="8" fill="url(#iconInnerShadow)"/>
+
+  <!-- Architectural Door Frame Outer Trim -->
+  <rect x="144" y="96" width="180" height="310" rx="14" fill="none" stroke="#e8eedf" stroke-width="16"/>
+  <line x1="126" y1="410" x2="342" y2="410" stroke="#c2cfae" stroke-width="14" stroke-linecap="round"/>
 
   <!-- Open Door Leaf (Swung open in 3D perspective) -->
-  <polygon points="158,106 250,132 250,380 158,396" fill="url(#doorLeafGrad)" stroke="#4a5d3f" stroke-width="3"/>
+  <polygon points="156,106 254,134 254,378 156,396" fill="url(#iconDoorLeaf)" stroke="#3e5234" stroke-width="4"/>
 
   <!-- Door Leaf Panels / Inlays -->
-  <polygon points="172,130 236,148 236,228 172,220" fill="#7d9370" opacity="0.6"/>
-  <polygon points="172,250 236,256 236,356 172,368" fill="#7d9370" opacity="0.6"/>
+  <polygon points="172,132 238,150 238,226 172,218" fill="#7d9370" opacity="0.6"/>
+  <polygon points="172,248 238,254 238,354 172,366" fill="#7d9370" opacity="0.6"/>
 
   <!-- Solid Brass Handle & Lock Glow -->
-  <circle cx="236" cy="246" r="6" fill="#fdf3cb"/>
-  <rect x="226" y="244" width="14" height="4" rx="2" fill="#fff9e6"/>
+  <circle cx="240" cy="244" r="7" fill="#fdf3cb"/>
+  <rect x="228" y="242" width="16" height="5" rx="2.5" fill="#fff9e6"/>
 
   <!-- Overhead IoT Smart Light Fixture -->
-  <rect x="210" y="70" width="48" height="10" rx="5" fill="#f7f9f1"/>
-  <circle cx="234" cy="75" r="16" fill="#fff2b8" opacity="0.4"/>
-  <circle cx="234" cy="75" r="8" fill="#fffbe8"/>
+  <rect x="208" y="68" width="52" height="12" rx="6" fill="#f7f9f1"/>
+  <circle cx="234" cy="74" r="18" fill="#fff2b8" opacity="0.45"/>
+  <circle cx="234" cy="74" r="9" fill="#fffbe8"/>
 
-  <!-- Subdued IoT Wireless Wave Arc -->
-  <path d="M 290 120 A 40 40 0 0 1 330 160" fill="none" stroke="#fae7b4" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
-  <path d="M 305 105 A 60 60 0 0 1 365 165" fill="none" stroke="#fae7b4" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+  <!-- Subdued IoT Wireless Wave Arcs -->
+  <path d="M 295 120 A 42 42 0 0 1 337 162" fill="none" stroke="#fae7b4" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+  <path d="M 312 103 A 64 64 0 0 1 376 167" fill="none" stroke="#fae7b4" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
 </svg>
-

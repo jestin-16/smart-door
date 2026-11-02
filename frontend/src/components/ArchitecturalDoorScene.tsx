@@ -35,7 +35,7 @@ export const ArchitecturalDoorScene: React.FC<ArchitecturalDoorSceneProps> = ({
 
   // Derived ambient light multiplier for light spill intensity
   const ambientFactor =
-    typeof lightPercentage === 'number'
+    typeof lightPercentage === 'number' && Number.isFinite(lightPercentage)
       ? Math.max(0.35, Math.min(1.0, (100 - lightPercentage * 0.35) / 100))
       : 0.85;
 
@@ -54,6 +54,15 @@ export const ArchitecturalDoorScene: React.FC<ArchitecturalDoorSceneProps> = ({
       style={
         {
           '--ambient-light-factor': ambientFactor.toFixed(2),
+          '--door-open-angle': `${DOOR_ANIMATION_CONFIG.targetOpenAngle}deg`,
+          '--door-open-duration': `${DOOR_ANIMATION_CONFIG.openDurationMs}ms`,
+          '--door-open-ease': DOOR_ANIMATION_CONFIG.openEasing,
+          '--door-close-duration': `${DOOR_ANIMATION_CONFIG.closeDurationMs}ms`,
+          '--door-close-ease': DOOR_ANIMATION_CONFIG.closeEasing,
+          '--handle-release-duration': `${DOOR_ANIMATION_CONFIG.handleReleaseDurationMs}ms`,
+          '--handle-release-angle': `${DOOR_ANIMATION_CONFIG.handleMaxAngle}deg`,
+          '--light-fade-duration': `${DOOR_ANIMATION_CONFIG.lightFadeDurationMs}ms`,
+          '--pendant-sway-duration': `${DOOR_ANIMATION_CONFIG.pendantSwayDurationMs}ms`,
         } as React.CSSProperties
       }
     >
@@ -63,6 +72,7 @@ export const ArchitecturalDoorScene: React.FC<ArchitecturalDoorSceneProps> = ({
         <div className="scene-pendant">
           <div className="pendant-cord" />
           <div className="scene-beam" />
+          <div className="pendant-halo" />
           <div className="pendant-bulb" />
           <div className="scene-lamp" />
         </div>

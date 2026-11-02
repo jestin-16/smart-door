@@ -929,10 +929,10 @@ input[type=range]::-moz-range-thumb { width: 17px; height: 17px; border-radius: 
 @keyframes detailReveal { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
 .door-scene {
-  --door-open-duration: 260ms;
-  --door-open-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --door-close-duration: 220ms;
-  --door-close-ease: cubic-bezier(0.2, 0, 0, 1);
+  --door-open-duration: 780ms;
+  --door-open-ease: cubic-bezier(0.22, 0.68, 0.2, 1);
+  --door-close-duration: 620ms;
+  --door-close-ease: cubic-bezier(0.32, 0, 0.2, 1);
   --door-handle-duration: 140ms;
   --door-handle-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
   --light-open-duration: var(--door-open-duration);
@@ -1067,14 +1067,11 @@ input[type=range]::-moz-range-thumb { width: 17px; height: 17px; border-radius: 
   background: repeating-linear-gradient(90deg, #ffffff03 0 2px, transparent 2px 9px), linear-gradient(100deg, #bc9c6f, #a58154 55%, #947246);
   border: 1px solid #c9ac80;
   box-shadow: inset 3px 0 3px #ffffff15, 4px 0 0 #493a2a;
-  transition: transform var(--door-close-duration) var(--door-close-ease),
-              filter var(--door-close-duration) ease;
+  transition: transform var(--door-close-duration) var(--door-close-ease);
 }
 [data-open=true] .door-leaf {
-  transform: rotateY(-72deg);
-  filter: brightness(.92);
-  transition: transform var(--door-open-duration) var(--door-open-ease),
-              filter var(--door-open-duration) ease;
+  transform: rotateY(var(--door-open-angle, -74deg));
+  transition: transform var(--door-open-duration) var(--door-open-ease);
 }
 .door-inlay { position: absolute; left: 14%; right: 14%; border: 1px solid #503b2880; box-shadow: inset 2px 2px 5px #38261730, 1px 1px #dfbc8130; }
 .door-inlay-top { top: 10%; height: 39%; }
@@ -1279,7 +1276,7 @@ input[type=range]::-moz-range-thumb { width: 17px; height: 17px; border-radius: 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .animate-reveal-up, .animate-reveal-down, .animate-fade-in { opacity: 1 !important; transform: none !important; }
-  [data-open=true] .door-leaf { transform: rotateY(-25deg) !important; }
+  [data-open=true] .door-leaf { transform: rotateY(var(--door-open-angle, -74deg)) !important; }
   .scene-dust-field { display: none !important; }
   .dust-mote { animation: none !important; }
 }

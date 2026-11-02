@@ -66,14 +66,32 @@ class CommandControllerTest {
     }
 
     @Test
-    void testSetDoorState_RejectedInFavorOfReedSwitch() {
+    void testSetDoorState_Success_Open() {
         CommandRequest request = new CommandRequest("OPEN", null);
+        com.smartdoor.model.TelemetryDto dto = new com.smartdoor.model.TelemetryDto();
+        dto.setDoorOpen(true);
+        dto.setLightOn(true);
+        when(mqttGatewayService.simulateDoorState("smartdoor-01", "OPEN")).thenReturn(dto);
+
+        ResponseEntity<Map<String, Object>> response = commandController.setDoorState("smartdoor-01", request);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals("SUCCESS", response.getBody().get("status"));
+        assertEquals("OPEN", response.getBody().get("state"));
+        assertEquals(true, response.getBody().get("simulated"));
+        assertEquals(true, response.getBody().get("doorOpen"));
+        assertEquals(true, response.getBody().get("lightOn"));
+        verify(mqttGatewayService, times(1)).simulateDoorState("smartdoor-01", "OPEN");
+    }
+
+    @Test
+    void testSetDoorState_MissingState() {
+        CommandRequest request = new CommandRequest(null, null);
 
         ResponseEntity<Map<String, Object>> response = commandController.setDoorState("smartdoor-01", request);
 
         assertEquals(400, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        assertEquals("REJECTED", response.getBody().get("status"));
         verifyNoInteractions(mqttGatewayService);
     }
 }

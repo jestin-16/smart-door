@@ -39,7 +39,7 @@ export const DoorStatusCard: React.FC<DoorStatusCardProps> = ({
             <button
               type="button"
               className="control-ghost-btn"
-              disabled={!isConnected}
+              title={isOpen ? "Test closing the door (starts delay timer)" : "Test opening the door (triggers entry light)"}
               onClick={() => onSetDoorState(isOpen ? 'CLOSED' : 'OPEN')}
               aria-label={isOpen ? "Simulate closing door" : "Simulate opening door"}
             >

@@ -12,6 +12,7 @@ import { EventHistoryTable } from './components/EventHistoryTable';
 import { SettingsModal } from './components/SettingsModal';
 import { SystemAlert } from './components/SystemAlert';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
+import { SmartDoorLogo } from './components/SmartDoorLogo';
 
 export function App() {
   const {
@@ -171,7 +172,7 @@ export function App() {
       {/* 7. Footer with Gentle Fade In */}
       <footer className="dashboard-footer">
         <div>
-          <p><span className="footer-brand">smartdoor.</span> <span>Designed around your everyday.</span></p>
+          <p className="flex items-center gap-2"><SmartDoorLogo size={18} /><span className="footer-brand">smartdoor.</span> <span>Designed around your everyday.</span></p>
           <a href="#hero-twin">Back to overview <ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
       </footer>

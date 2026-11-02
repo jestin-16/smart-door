@@ -34,9 +34,9 @@
 .hero-scene-arch { position: absolute; z-index: -2; bottom: 22px; width: 292px; height: 362px; max-width: 100%; border-radius: 150px 150px 12px 12px; background: radial-gradient(ellipse at 50% 25%, #f7eee0, transparent 70%), linear-gradient(120deg, #e0d8c9, #ede7dc 55%, #d6ccbb); box-shadow: inset 1px 1px 0 #fff9, inset -8px 0 24px #96846a12; }
 .hero-scene-arch::after { content: ''; position: absolute; inset: 12px; border: 1px solid #fff9; border-radius: inherit; }
 .hero-scene-light { position: absolute; z-index: -1; inset: 0; background: radial-gradient(ellipse at 50% 32%, #ffc45b80, transparent 68%); opacity: 0; transition: opacity 400ms ease; pointer-events: none; }
-.entrance-hero[data-illuminated=true] .hero-scene-light { animation: entranceLightBreathe 6s ease-in-out infinite alternate; }
+.entrance-hero[data-illuminated=true] .hero-scene-light { opacity: .65; }
 .hero-ground { position: absolute; bottom: 19px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #bdcbb1, transparent); }
-.entrance-hero .door-scene { --door-open-duration: 850ms; --door-open-ease: cubic-bezier(.22, 1, .36, 1); --door-close-duration: 650ms; --door-close-ease: cubic-bezier(.4, 0, .2, 1); width: 300px; max-width: 100%; transform-origin: center bottom; }
+.entrance-hero .door-scene { width: 300px; max-width: 100%; transform-origin: center bottom; }
 .entrance-hero .scene-wall { height: 380px; }
 .hero-scene-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
 .hero-ambient-reading { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
@@ -47,16 +47,22 @@
 /* Walnut joinery, limestone surround, and a recessed interior. */
 .entrance-hero .door-frame { width: 164px; height: 248px; left: calc(50% - 82px); bottom: 32px; border: 9px solid #e9dfce; border-bottom: 6px solid #b6a58b; border-radius: 9px 9px 2px 2px; background: #2c2925; box-shadow: 0 0 0 1px #bfb19b, 0 0 0 5px #f7f1e6, 8px 10px 20px #51433028; transform: none; }
 .entrance-hero .door-leaf { border-radius: 3px 3px 0 0; background: repeating-linear-gradient(90deg, #24160f33 0 1px, transparent 1px 7px, #eab77918 7px 8px), linear-gradient(110deg, #8b6042, #67422e 65%, #503322); border: 1px solid #9b7451; box-shadow: inset 2px 1px 0 #d5ae7855, inset -3px 0 8px #21140e50, 4px 0 0 #38251c; }
-.entrance-hero [data-open=true] .door-leaf { transform: rotateY(-76deg); filter: brightness(.88); }
+.entrance-hero [data-open=true] .door-leaf { transform: rotateY(var(--door-open-angle)); }
 .entrance-hero .door-inlay { border-radius: 2px; }
 .entrance-hero .door-inlay-top { top: 15px; bottom: 43px; left: 14px; right: auto; width: 28px; height: auto; border: 3px solid #3a2c24; background: repeating-linear-gradient(90deg, #ffffff12 0 1px, transparent 1px 4px), linear-gradient(155deg, #85938c, #465651 50%, #253733); box-shadow: 0 0 0 1px #bd956350, inset 2px 0 6px #17211d70; }
 .entrance-hero .door-inlay-bottom { left: 54px; right: 13px; top: 15px; bottom: 16px; height: auto; border: 1px solid #c0976028; box-shadow: inset 1px 0 #2f1a1440; }
-.entrance-hero .door-handle { right: 13px; top: 51%; width: 25px; height: 5px; border-radius: 3px; background: linear-gradient(#f4d69b, #b88843); box-shadow: 0 3px 3px #23181070; }
+.entrance-hero .door-handle { right: 13px; top: 51%; width: 25px; height: 5px; border-radius: 3px; background: linear-gradient(#f4d69b, #b88843); box-shadow: 0 3px 3px #23181070; transform-origin: right center; transform: rotate(0deg); transition: transform 120ms ease-out; }
+.entrance-hero [data-open=true] .door-handle { animation: doorHandleRelease var(--handle-release-duration) ease-in-out; }
+@keyframes doorHandleRelease {
+  0%, 100% { transform: rotate(0deg); }
+  22%, 42% { transform: rotate(var(--handle-release-angle)); }
+}
 .entrance-hero .door-lock { right: 12px; top: 48%; width: 8px; height: 28px; background: linear-gradient(90deg, #a4773e, #dec08b, #9b713b); box-shadow: 0 1px 3px #21150c60; }
 .entrance-hero .door-peephole { position: absolute; width: 5px; height: 5px; left: 60%; top: 28%; border: 1px solid #d6b47d; border-radius: 50%; background: #251b15; box-shadow: 0 1px 2px #251b1570; }
 .entrance-hero .door-mail-slot { position: absolute; left: 52%; bottom: 23%; width: 37px; height: 7px; border: 2px solid #b8945b; border-radius: 1px; background: #30231b; box-shadow: 0 2px 2px #20140b55; }
 .entrance-hero .door-hinge { background: linear-gradient(90deg, #8d6c3d, #ddbd81, #8d6c3d); }
 .entrance-hero .door-thickness-edge, .entrance-hero .door-leaf::after { background: #38251c; }
+.entrance-hero .door-leaf::after { display: none; }
 .entrance-hero .door-thickness-edge::after { background: #c7a56b; }
 .entrance-hero .door-interior { border-radius: 3px 3px 0 0; background: linear-gradient(90deg, #292825, #575348); }
 .entrance-hero .door-interior::before { width: 52px; height: 119px; top: 28px; right: 18px; border: 5px solid #726452; border-radius: 32px 32px 0 0; background: linear-gradient(145deg, #8f8b77, #514d41); box-shadow: 6px 8px 14px #16141150; transition: background 450ms ease, box-shadow 450ms ease; }
@@ -66,27 +72,24 @@
 .entrance-hero .door-leaf::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 0%, #ffd06c55, #ffbc3815 48%, transparent 78%); opacity: 0; transition: opacity 450ms ease; }
 .entrance-hero [data-lit=true] .door-leaf::before { opacity: var(--ambient-light-factor, .85); }
 
-/* A suspended brass pendant: its light cone shares the ceiling pivot. */
+/* A quiet pendulum; toggling the door never restarts or snaps the fixture. */
 .entrance-hero .pendant-mount { position: absolute; z-index: 4; top: 1px; left: calc(50% - 14px); width: 28px; height: 7px; border-radius: 50%; background: linear-gradient(#66533c, #2e2b27); box-shadow: 0 2px 3px #493b3525; }
-.entrance-hero .scene-pendant { position: absolute; z-index: 4; top: 6px; left: 0; width: 100%; height: 350px; pointer-events: none; transform-origin: 50% 0; }
-.entrance-hero .pendant-cord { position: absolute; top: 0; left: calc(50% - 1px); width: 2px; height: 41px; background: linear-gradient(90deg, #3a332c, #7e6f59); }
-.entrance-hero .scene-lamp { top: 39px; left: calc(50% - 31px); width: 62px; height: 28px; border-radius: 32px 32px 5px 5px; border: 1px solid #896840; border-bottom: 4px solid #c8a56c; background: linear-gradient(110deg, #e1c48e, #b38b50 45%, #785731); box-shadow: inset 4px 0 7px #fff3, 0 3px 4px #503b2525; }
+.entrance-hero .scene-pendant { position: absolute; z-index: 4; top: 6px; left: 0; width: 100%; height: 350px; pointer-events: none; transform-origin: 50% 0; animation: pendantSway var(--pendant-sway-duration) ease-in-out infinite; }
+.entrance-hero [data-online=false] .scene-pendant { animation-play-state: paused; }
+.entrance-hero .pendant-cord { position: absolute; top: 0; left: calc(50% - 1px); width: 2px; height: 45px; background: linear-gradient(90deg, #332d27, #8a7960); box-shadow: 1px 0 1px #fff5; }
+.entrance-hero .scene-lamp { top: 43px; left: calc(50% - 34px); width: 68px; height: 31px; border-radius: 38px 38px 7px 7px; border: 1px solid #94713f; border-bottom: 3px solid #d9b77a; background: radial-gradient(ellipse at 30% 22%, #fff4cf85, transparent 44%), linear-gradient(100deg, #a77c42, #e6c78b 28%, #b58a4c 62%, #73512d); box-shadow: inset 0 1px 1px #fff9, inset -5px 0 8px #4f351d35, 0 4px 5px #503b2520; transition: none; }
 .entrance-hero .scene-lamp::before { content: ''; position: absolute; top: -5px; left: calc(50% - 5px); width: 10px; height: 6px; border-radius: 3px 3px 0 0; background: #786040; }
-.entrance-hero .scene-lamp::after { content: ''; position: absolute; bottom: -5px; left: 3px; right: 3px; height: 5px; border-radius: 50%; background: #a08459; transition: background 350ms ease, box-shadow 350ms ease; }
-.entrance-hero .pendant-bulb { position: absolute; top: 61px; left: calc(50% - 7px); width: 14px; height: 12px; border-radius: 0 0 50% 50%; background: #b9ac8e; transition: background 350ms ease, box-shadow 350ms ease; }
-.entrance-hero [data-lit=true] .scene-lamp { background: linear-gradient(110deg, #e1c48e, #b38b50 45%, #785731); box-shadow: inset 4px 0 7px #fff3, 0 5px 18px #ffbd4535; }
-.entrance-hero [data-lit=true] .scene-lamp::after { background: #ffe5a1; box-shadow: 0 2px 12px #ffd16bdd; }
-.entrance-hero [data-lit=true] .pendant-bulb { background: #fff1c4; box-shadow: 0 0 12px #ffdb83, 0 8px 30px #ffb52eaa; }
-.entrance-hero .scene-beam { inset: 65px 7% -4px; clip-path: polygon(39% 0, 61% 0, 100% 100%, 0 100%); background: radial-gradient(ellipse at 50% 0%, #ffe3a66b, #ffc04a28 55%, #f5a62300 80%); transition: opacity 400ms ease, transform 600ms ease; }
-.entrance-hero [data-lit=true] .scene-beam { opacity: var(--ambient-light-factor, .85); }
-.entrance-hero [data-open=true] .scene-pendant { animation: pendantDoorSway 2400ms ease-in-out both; }
-@keyframes pendantDoorSway {
-  0% { transform: rotate(0deg); }
-  18% { transform: rotate(-7deg); }
-  40% { transform: rotate(4.5deg); }
-  62% { transform: rotate(-2.5deg); }
-  82% { transform: rotate(1deg); }
-  100% { transform: rotate(0deg); }
+.entrance-hero .scene-lamp::after { content: ''; position: absolute; bottom: -5px; left: 2px; right: 2px; height: 6px; border-radius: 50%; border: 1px solid #d9b77a; background: #b79b6c; transition: background var(--light-fade-duration) ease; }
+.entrance-hero .pendant-bulb { position: absolute; top: 70px; left: calc(50% - 6px); width: 12px; height: 13px; border-radius: 40% 40% 50% 50%; background: #d1c7b1; transition: background var(--light-fade-duration) ease; }
+.entrance-hero .pendant-halo { position: absolute; top: 48px; left: calc(50% - 49px); width: 98px; height: 76px; border-radius: 50%; background: radial-gradient(ellipse, #fff0bc90, #ffd27c30 38%, transparent 70%); opacity: 0; transition: opacity var(--light-fade-duration) ease; }
+.entrance-hero [data-lit=true] .pendant-halo { opacity: var(--ambient-light-factor, .85); }
+.entrance-hero [data-lit=true] .scene-lamp::after { background: #ffe6ac; }
+.entrance-hero [data-lit=true] .pendant-bulb { background: #fff5d6; }
+.entrance-hero .scene-beam { inset: 76px 5% -4px; clip-path: polygon(39% 0, 61% 0, 100% 100%, 0 100%); mask-image: linear-gradient(90deg, transparent, #000 22% 78%, transparent); background: radial-gradient(ellipse at 50% 0%, #ffe6b885, #ffd38924 48%, transparent 78%); transform: scaleY(.98); transition: opacity var(--light-fade-duration) ease, transform var(--light-fade-duration) ease; }
+.entrance-hero [data-lit=true] .scene-beam { opacity: var(--ambient-light-factor, .85); transform: scaleY(1); }
+@keyframes pendantSway {
+  0%, 100% { transform: rotate(-.85deg); }
+  50% { transform: rotate(.85deg); }
 }
 
 /* Layered stone threshold and a pool of light that widens with the door. */
@@ -98,10 +101,11 @@
 .entrance-hero .scene-dust-field { inset: 83px 12% 30px; z-index: 5; opacity: 0; }
 .entrance-hero [data-lit=true] .scene-dust-field { opacity: .65; }
 .entrance-hero .dust-mote { width: 2px; height: 2px; background: #ffe0a0; box-shadow: 0 0 5px #ffb52e; }
-.entrance-hero .door-light-spill { z-index: 2; bottom: -12px; left: calc(50% - 110px); width: 220px; height: 65px; clip-path: none; transform-origin: center top; background: radial-gradient(ellipse at 50% 25%, #ffd06ca0, #ffb52e45 42%, transparent 74%); opacity: 0; }
-.entrance-hero [data-lit=true] .door-light-spill { opacity: var(--ambient-light-factor, .85); transform: scale(.75); }
-.entrance-hero [data-open=true][data-lit=true] .door-light-spill { transform: scale(1.12); background: radial-gradient(ellipse at 50% 25%, #ffdb85cc, #ffb52e70 42%, transparent 74%); }
-@keyframes entranceLightBreathe { from { opacity: .45; } to { opacity: .9; } }
+.entrance-hero [data-lit=false] .dust-mote, .entrance-hero [data-online=false] .dust-mote { animation-play-state: paused; }
+.entrance-hero .door-light-spill { z-index: 2; bottom: -12px; left: calc(50% - 110px); width: 220px; height: 65px; clip-path: none; transform-origin: center top; transform: scale(.72, .8); background: radial-gradient(ellipse at 50% 25%, #ffdb85b0, #ffc36b50 42%, transparent 74%); opacity: 0; transition: transform var(--door-close-duration) var(--door-close-ease), opacity var(--light-fade-duration) ease; }
+.entrance-hero [data-lit=true] .door-light-spill { opacity: calc(var(--ambient-light-factor, .85) * .65); }
+.entrance-hero [data-open=true] .door-light-spill { transform: scale(1.12); transition: transform var(--door-open-duration) var(--door-open-ease), opacity var(--light-fade-duration) ease; }
+.entrance-hero [data-open=true][data-lit=true] .door-light-spill { opacity: var(--ambient-light-factor, .85); background: radial-gradient(ellipse at 50% 25%, #ffdb85b0, #ffc36b50 42%, transparent 74%); }
 @media (max-width: 1100px) {
   .dashboard-shell main { padding-inline: 32px; }
   .entrance-hero .entrance-copy { padding-left: 28px; }
@@ -134,6 +138,6 @@
 @media (prefers-reduced-motion: reduce) {
   .entrance-hero .hero-scene-light { animation: none; }
   .entrance-hero[data-illuminated=true] .hero-scene-light { animation: none; opacity: .75; }
-  .entrance-hero [data-open=true] .scene-pendant { animation: none; transform: none; }
+  .entrance-hero .scene-pendant, .entrance-hero [data-open=true] .door-handle { animation: none; transform: none; }
   .hero-motion-toggle { display: none; }
 }

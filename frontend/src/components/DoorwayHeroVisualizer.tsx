@@ -31,6 +31,7 @@ export const DoorwayHeroVisualizer: React.FC<DoorwayHeroVisualizerProps> = ({
   remainingDelayMs = 0,
   offDelayMs = 15000,
   isConnected,
+  onSetDoorState,
 }) => {
   const [motionPaused, setMotionPaused] = useState(false);
   const hasData = Boolean(isConnected && doorOpen != null && lightOn != null);
@@ -66,9 +67,29 @@ export const DoorwayHeroVisualizer: React.FC<DoorwayHeroVisualizerProps> = ({
       <div className="entrance-visual">
         <div className="hero-scene-heading">
           <span>FRONT ENTRANCE</span>
-          <span className="hero-connection"><i />{hasData ? 'Live' : 'Offline'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {onSetDoorState && (
+              <button
+                type="button"
+                className="control-ghost-btn"
+                style={{ padding: '3px 10px', fontSize: '11px', borderRadius: '12px', minHeight: 'auto' }}
+                onClick={() => onSetDoorState(doorOpen ? 'CLOSED' : 'OPEN')}
+                title={doorOpen ? "Simulate closing door" : "Simulate opening door to test entry light"}
+                aria-label={doorOpen ? "Simulate closing door" : "Simulate opening door"}
+              >
+                <span className="btn-dot" />
+                <span>{doorOpen ? 'Simulate Close' : 'Simulate Open'}</span>
+              </button>
+            )}
+            <span className="hero-connection"><i />{hasData ? 'Live' : 'Offline'}</span>
+          </div>
         </div>
-        <div className="hero-scene-stage">
+        <div
+          className="hero-scene-stage"
+          onClick={() => onSetDoorState?.(doorOpen ? 'CLOSED' : 'OPEN')}
+          style={{ cursor: onSetDoorState ? 'pointer' : 'default' }}
+          title={onSetDoorState ? (doorOpen ? "Click to simulate closing the door" : "Click to simulate opening the door") : undefined}
+        >
           <div className="hero-scene-light" aria-hidden="true" />
           <div className="hero-scene-arch" aria-hidden="true" />
           <div className="hero-ground" aria-hidden="true" />

@@ -54,6 +54,7 @@ public class MqttGatewayService implements MqttCallbackExtended {
 
     private MqttAsyncClient mqttClient;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final Map<String, ScheduledFuture<?>> activeSimulationTimers = new ConcurrentHashMap<>();
 
     public MqttGatewayService(DoorEventRepository eventRepository, ObjectProvider<ObjectMapper> objectMapperProvider) {
         this.eventRepository = eventRepository;
@@ -323,6 +324,134 @@ public class MqttGatewayService implements MqttCallbackExtended {
         }
 
         return dto;
+    }
+
+    public TelemetryDto simulateDoorState(String deviceId, String state) {
+        String targetId = (deviceId != null && !deviceId.isBlank()) ? deviceId : defaultDeviceId;
+        boolean open = "OPEN".equalsIgnoreCase(state);
+
+        TelemetryDto tel = latestTelemetryMap.get(targetId);
+        if (tel == null) {
+            tel = new TelemetryDto();
+            tel.setDeviceId(targetId);
+            tel.setLightAdc(2800);
+            tel.setLightPercentage(28.5);
+            tel.setLightThreshold(2000);
+            tel.setLightHysteresis(100);
+            tel.setIsDark(true);
+            tel.setMode("AUTO");
+            tel.setLightOn(false);
+            tel.setOffDelayMs(15000L);
+            tel.setWifiConnected(true);
+            tel.setWifiRssi(-55);
+            latestTelemetryMap.put(targetId, tel);
+        }
+
+        tel.setDoorOpen(open);
+        tel.setReedSwitchClosed(!open);
+        tel.setMagnetDetected(!open);
+        tel.setDoorStateEstablished(true);
+        tel.setConnectionState("CONNECTED");
+        tel.setMqttConnected(true);
+        tel.setLastHardwareUpdateTimestamp(System.currentTimeMillis());
+        tel.setTimestamp(Instant.now());
+        deviceOnlineMap.put(targetId, true);
+
+        String eventType;
+        if (open) {
+            eventType = "DOOR_OPENED";
+            // Cancel delay timer immediately upon reopening
+            cancelSimulatedTimer(targetId);
+            tel.setTimerActive(false);
+            tel.setRemainingDelayMs(0L);
+
+            // Autonomous lighting logic: In AUTO mode, turn light ON if ambient is dark
+            if ("AUTO".equalsIgnoreCase(tel.getMode()) && (tel.getIsDark() == null || Boolean.TRUE.equals(tel.getIsDark()))) {
+                tel.setLightOn(true);
+            }
+        } else {
+            eventType = "DOOR_CLOSED";
+            // In AUTO mode with light ON, start off-delay countdown timer
+            if ("AUTO".equalsIgnoreCase(tel.getMode()) && Boolean.TRUE.equals(tel.getLightOn())) {
+                long delay = (tel.getOffDelayMs() != null && tel.getOffDelayMs() > 0) ? tel.getOffDelayMs() : 15000L;
+                tel.setTimerActive(true);
+                tel.setRemainingDelayMs(delay);
+                scheduleSimulatedTimer(targetId, delay);
+            }
+        }
+
+        DoorEvent event = new DoorEvent(UUID.randomUUID().toString(), targetId, eventType);
+        event.setCreatedAt(Instant.now());
+        event.setDoorOpen(open);
+        event.setReedSwitchClosed(!open);
+        event.setMagnetDetected(!open);
+        event.setLightOn(tel.getLightOn());
+        event.setLightAdc(tel.getLightAdc());
+        event.setLightPercentage(tel.getLightPercentage());
+        event.setIsDark(tel.getIsDark());
+        event.setMode(tel.getMode());
+        event.setRemainingDelayMs(tel.getRemainingDelayMs());
+        event.setOffDelayMs(tel.getOffDelayMs());
+        event.setDescription("Simulated door " + (open ? "opened" : "closed"));
+        eventRepository.save(event);
+
+        broadcastTelemetry(tel);
+
+        // Notify MQTT topic if broker is connected
+        if (mqttClient != null && mqttClient.isConnected()) {
+            try {
+                String topic = topicPrefix + targetId + "/command";
+                String payload = String.format("{\"action\":\"SET_DOOR\",\"state\":\"%s\"}", state.toUpperCase());
+                publish(topic, payload);
+            } catch (Exception e) {
+                log.debug("MQTT publish skipped for simulated command: {}", e.getMessage());
+            }
+        }
+
+        return tel;
+    }
+
+    private void scheduleSimulatedTimer(String deviceId, long delayMs) {
+        cancelSimulatedTimer(deviceId);
+
+        ScheduledFuture<?> timerFuture = scheduler.schedule(() -> {
+            try {
+                TelemetryDto tel = latestTelemetryMap.get(deviceId);
+                if (tel != null && Boolean.TRUE.equals(tel.getTimerActive()) && !Boolean.TRUE.equals(tel.getDoorOpen())) {
+                    tel.setLightOn(false);
+                    tel.setTimerActive(false);
+                    tel.setRemainingDelayMs(0L);
+                    tel.setTimestamp(Instant.now());
+                    tel.setLastHardwareUpdateTimestamp(System.currentTimeMillis());
+
+                    DoorEvent lightOffEvent = new DoorEvent(UUID.randomUUID().toString(), deviceId, "LIGHT_TIMER_EXPIRED");
+                    lightOffEvent.setCreatedAt(Instant.now());
+                    lightOffEvent.setLightOn(false);
+                    lightOffEvent.setDoorOpen(false);
+                    lightOffEvent.setReedSwitchClosed(true);
+                    lightOffEvent.setMagnetDetected(true);
+                    lightOffEvent.setMode(tel.getMode());
+                    lightOffEvent.setDescription("15-second delay countdown expired: entry light turned OFF");
+                    eventRepository.save(lightOffEvent);
+
+                    broadcastTelemetry(tel);
+                    log.info("Simulated off-delay timer expired for device {}: light turned OFF", deviceId);
+                }
+            } catch (Exception e) {
+                log.error("Error executing simulated light timer expiration", e);
+            } finally {
+                activeSimulationTimers.remove(deviceId);
+            }
+        }, delayMs, TimeUnit.MILLISECONDS);
+
+        activeSimulationTimers.put(deviceId, timerFuture);
+    }
+
+    private void cancelSimulatedTimer(String deviceId) {
+        ScheduledFuture<?> future = activeSimulationTimers.remove(deviceId);
+        if (future != null && !future.isDone()) {
+            future.cancel(false);
+        }
     }
 
     public void publishDoorCommand(String deviceId, String state) {

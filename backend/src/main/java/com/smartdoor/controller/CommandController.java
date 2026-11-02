@@ -26,14 +26,26 @@ public class CommandController {
     }
 
     @PostMapping("/door")
-    @Operation(summary = "Set logical door state (Disabled)", description = "Door state is governed exclusively by the physical magnetic reed switch on GPIO 27. Remote command overrides are rejected.")
+    @Operation(summary = "Set logical door state (Simulate door open/close)", description = "Simulates opening or closing the door for testing, updating live telemetry and the lighting state machine.")
     public ResponseEntity<Map<String, Object>> setDoorState(
             @RequestParam(required = false) String deviceId,
             @Valid @RequestBody CommandRequest request) {
 
-        return ResponseEntity.badRequest().body(Map.of(
-                "status", "REJECTED",
-                "error", "Door state simulation is disabled. Physical magnetic reed switch on GPIO 27 is the active hardware sensor."
+        if (request.getState() == null || (!request.getState().equalsIgnoreCase("OPEN") && !request.getState().equalsIgnoreCase("CLOSED"))) {
+            return ResponseEntity.badRequest().body(Map.of("error", "State must be provided (OPEN or CLOSED)"));
+        }
+
+        String targetId = (deviceId != null && !deviceId.isBlank()) ? deviceId : defaultDeviceId;
+        com.smartdoor.model.TelemetryDto updated = mqttGatewayService.simulateDoorState(targetId, request.getState());
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "deviceId", targetId,
+                "command", "SET_DOOR",
+                "state", request.getState().toUpperCase(),
+                "simulated", true,
+                "doorOpen", updated != null && Boolean.TRUE.equals(updated.getDoorOpen()),
+                "lightOn", updated != null && Boolean.TRUE.equals(updated.getLightOn())
         ));
     }
 

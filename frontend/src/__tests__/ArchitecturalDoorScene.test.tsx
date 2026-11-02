@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import ArchitecturalDoorScene from '../components/ArchitecturalDoorScene';
-import { DOOR_ANIMATION_CONFIG } from '../components/doorAnimationConfig';
 
 describe('ArchitecturalDoorScene Physical Simulation & Rendering', () => {
   beforeEach(() => {
@@ -76,12 +75,20 @@ describe('ArchitecturalDoorScene Physical Simulation & Rendering', () => {
     expect(scene).toHaveAttribute('data-open', 'true');
   });
 
-  it('exposes the expected DOOR_ANIMATION_CONFIG parameters', () => {
-    expect(DOOR_ANIMATION_CONFIG.mass).toBe(1.25);
-    expect(DOOR_ANIMATION_CONFIG.stiffness).toBe(64);
-    expect(DOOR_ANIMATION_CONFIG.damping).toBe(11.2);
-    expect(DOOR_ANIMATION_CONFIG.targetOpenAngle).toBe(-74);
-    expect(DOOR_ANIMATION_CONFIG.overshootAmountDeg).toBe(2.8);
-    expect(DOOR_ANIMATION_CONFIG.dustMoteCount).toBe(8);
+  it('keeps the light on when the door closes during the off-delay', () => {
+    const { rerender } = render(
+      <ArchitecturalDoorScene isConnected={true} doorOpen={true} lightOn={true} />
+    );
+    rerender(<ArchitecturalDoorScene isConnected={true} doorOpen={false} lightOn={true} />);
+    expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'Door closed, light on');
+    expect(screen.getByRole('img')).toHaveAttribute('data-lit', 'true');
+
+    rerender(<ArchitecturalDoorScene isConnected={true} doorOpen={false} lightOn={false} />);
+    expect(screen.getByRole('img')).toHaveAttribute('data-lit', 'false');
+  });
+
+  it('uses a finite ambient intensity when a sensor reading is invalid', () => {
+    render(<ArchitecturalDoorScene isConnected={true} doorOpen={true} lightOn={true} lightPercentage={NaN} />);
+    expect(screen.getByRole('img').style.getPropertyValue('--ambient-light-factor')).toBe('0.85');
   });
 });
